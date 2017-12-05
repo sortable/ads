@@ -1,5 +1,5 @@
 {
-  "name": "ads",
+  "name": "@sortable/ads",
   "version": "0.0.1",
   "description": "",
   "main": "dist/ads.js",
