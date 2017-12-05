@@ -1,0 +1,21 @@
+{
+  "name": "@sortable/ads",
+  "version": "0.0.1",
+  "description": "",
+  "main": "dist/ads.js",
+  "types": "dist/ads.d.js",
+  "scripts": {
+    "test": "npm run build && mocha dist/**/*.test.js",
+    "build": "tsc",
+    "prepublish": "npm run build"
+  },
+  "author": "gyson <eilian.yunsong@gmail.com>",
+  "license": "",
+  "devDependencies": {
+    "@types/chai": "^4.0.6",
+    "@types/mocha": "^2.2.44",
+    "chai": "^4.1.2",
+    "mocha": "^4.0.1",
+    "typescript": "^2.6.2"
+  }
+}
