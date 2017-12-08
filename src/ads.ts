@@ -13,6 +13,15 @@ export interface Context<T> {
   units: T[];
 }
 
+/**
+ * When requestAds API is triggered, config functions
+ * will be called in following order:
+ *   1. HB's defineUnit
+ *   2. HB's requestHB
+ *   3. GPT's defineUnit
+ *   4. HB's context.beforeRequestGPT
+ *   5. GPT's requestGPT
+ */
 export interface Config<T> {
   name?: string;
   init: (cb: CallbackFunction) => void;
@@ -232,45 +241,47 @@ export function requestAds(divIds: string[]) {
 
     const HBServiceAndContexts: Array<[Service<any>, Context<any>]> = [];
 
+    let calledBidderReady = false;
+
     HBs.forEach((hb, bidderId) => {
       waitingQueue.push(bidderId);
-
-      const callback = () => {
-        // remove that index from waitingQueue
-        const index = waitingQueue.indexOf(bidderId);
-        if (index >= 0) {
-          waitingQueue.splice(index, 1);
-        }
-        if (waitingQueue.length === 0) {
-          bidsReady();
-        }
-      };
 
       hb.waitReady(() => {
         const loadingTime = Date.now() - startTime;
         const timeout = bidderTimeout - loadingTime;
 
         const context = hb.define(ids);
-        context.done = callback;
         context.timeout = timeout;
-
-        HBServiceAndContexts.push([hb, context]);
+        context.done = () => {
+          // remove that index from waitingQueue
+          const index = waitingQueue.indexOf(bidderId);
+          if (index >= 0) {
+            waitingQueue.splice(index, 1);
+          }
+          if (waitingQueue.length === 0) {
+            bidsReady();
+          }
+        };
 
         if (timeout <= 0) {
-          // loading time is too long
+          // init loading time is too long
           context.done();
           return;
         }
+
+        HBServiceAndContexts.push([hb, context]);
 
         hb.requestHB(context);
       });
     });
 
-    setTimeout(() => {
+    if (waitingQueue.length === 0) {
       bidsReady();
-    }, bidderTimeout + 100); // 100ms as buffer time
-
-    let calledBidderReady = false;
+    } else {
+      setTimeout(() => {
+        bidsReady();
+      }, bidderTimeout + 100); // 100ms as buffer time
+    }
 
     function bidsReady() {
       if (calledBidderReady) {
