@@ -1,31 +1,49 @@
 
 export type CallbackFunction = () => void;
 
+export interface Context<T> {
+  beforeRequestGPT: CallbackFunction|null;
+  done: CallbackFunction;
+  ids: string[];
+  newIds: string[];
+  newUnits: T[];
+  refreshIds: string[];
+  refreshUnits: T[];
+  timeout: number;
+  units: T[];
+}
+
 export interface Config<T> {
   name?: string;
-  onInit: (cb: CallbackFunction) => void;
-  onDefineAd: (divId: string) => T|null|undefined;
-  onRequestAds: (newSlots: T[], refreshSlots: T[], timeout: number, cb: CallbackFunction) => void;
-  onSetTargetingForGPT?: (newSlots: T[], refreshSlots: T[], isRequestTimeout?: boolean) => void;
-  onDestroyAds?: (slots: T[]) => void;
-  onLoadNewPage?: () => void;
+  init: (cb: CallbackFunction) => void;
+  defineUnit: (divId: string) => T|null|undefined;
+  requestHB?: (context: Context<T>) => void;
+  requestGPT?: (context: Context<T>) => void;
+  destroyUnits?: (units: T[]) => void;
+  loadNewPage?: () => void;
 }
 
 class Service<T> {
   private name: string;
   private config: Config<T>;
-  private slots: { [index: string]: T };
+  private units: { [index: string]: T };
   private ready: boolean;
   private queue: CallbackFunction[];
 
   constructor(config: Config<T>, name: string) {
     this.name = name;
     this.config = config;
-    this.slots = {};
+    this.units = {};
     this.ready = false;
     this.queue = [];
 
-    this.init();
+    this.config.init(() => {
+      this.ready = true;
+      this.queue.forEach((cb) => {
+        cb();
+      });
+      this.queue = [];
+    });
   }
 
   public emitError(msg: string, err?: Error) {
@@ -36,16 +54,6 @@ class Service<T> {
     console.warn(this.name, msg);
   }
 
-  public init() {
-    this.config.onInit(() => {
-      this.ready = true;
-      this.queue.forEach((cb) => {
-        cb();
-      });
-      this.queue = [];
-    });
-  }
-
   public waitReady(cb: CallbackFunction) {
     if (this.ready) {
       cb();
@@ -54,68 +62,79 @@ class Service<T> {
     }
   }
 
-  public defineAds(divIds: string[]): [T[], T[]] {
-    const newSlots: T[] = [];
-    const refreshSlots: T[] = [];
+  public define(divIds: string[]): Context<T> {
+    const newIds: string[] = [];
+    const newUnits: T[] = [];
+    const refreshIds: string[] = [];
+    const refreshUnits: T[] = [];
     divIds.forEach((divId) => {
       if (!requestedAds.hasOwnProperty(divId)) {
         // this ad is likely destroyed
         return;
       }
-      if (this.slots.hasOwnProperty(divId)) {
-        refreshSlots.push(this.slots[divId]);
+      if (this.units.hasOwnProperty(divId)) {
+        refreshUnits.push(this.units[divId]);
       } else {
         try {
-          const slot = this.config.onDefineAd(divId);
+          const slot = this.config.defineUnit(divId);
           if (slot !== null && slot !== undefined) {
-            this.slots[divId] = slot;
-            newSlots.push(slot);
+            this.units[divId] = slot;
+            newUnits.push(slot);
           }
         } catch (e) {
           this.emitWarning('fail to define ad');
         }
       }
     });
-    return [newSlots, refreshSlots];
+    return {
+      beforeRequestGPT: null,
+      done: () => { /* noop */ },
+      ids: newIds.concat(refreshIds),
+      newIds,
+      newUnits,
+      refreshIds,
+      refreshUnits,
+      timeout: 0,
+      units: newUnits.concat(refreshUnits),
+    };
   }
 
-  public requestAds(newSlots: T[], refreshSlots: T[], timeout: number, cb: CallbackFunction) {
+  public requestHB(context: Context<T>) {
     try {
-      this.config.onRequestAds(newSlots, refreshSlots, timeout, cb);
-    } catch (e) {
-      this.emitWarning('fail to request ads');
-      cb();
-    }
-  }
-
-  // even if not all bids ready, HB still have a chance to set targeting
-  public setTargetingForGPT(newSlots: T[], refreshSLots: T[], isRequestTimeout: boolean) {
-    if (!this.ready) {
-      return;
-    }
-    try {
-      if (this.config.onSetTargetingForGPT) {
-        this.config.onSetTargetingForGPT(newSlots, refreshSLots, isRequestTimeout);
+      if (this.config.requestHB != null) {
+        this.config.requestHB(context);
       }
     } catch (e) {
-      this.emitWarning('fail to set targeting');
+      this.emitWarning('fail to request hb');
+      context.done();
     }
   }
 
-  public destroyAds(divIds: string[]) {
+  public requestGPT(context: Context<T>) {
+    try {
+      if (this.config.requestGPT != null) {
+        this.config.requestGPT(context);
+      }
+    } catch (e) {
+      this.emitWarning('fail to request gpt');
+      context.done();
+    }
+  }
+
+  public destroy(divIds: string[]) {
     if (!this.ready) {
       return;
     }
     try {
-      const slots: T[] = [];
+      const units: T[] = [];
       divIds.forEach((divId) => {
-        if (this.slots.hasOwnProperty(divId)) {
-          slots.push(this.slots[divId]);
-          delete this.slots[divId];
+        if (this.units.hasOwnProperty(divId)) {
+          units.push(this.units[divId]);
+          delete this.units[divId];
         }
       });
-      if (this.config.onDestroyAds) {
-        this.config.onDestroyAds(slots);
+      if (this.config.destroyUnits) {
+        this.config.destroyUnits(units);
       }
     } catch (e) {
       this.emitWarning('fail to destroy ads');
@@ -127,8 +146,8 @@ class Service<T> {
       return;
     }
     try {
-      if (this.config.onLoadNewPage) {
-        this.config.onLoadNewPage();
+      if (this.config.loadNewPage) {
+        this.config.loadNewPage();
       }
     } catch (e) {
       this.emitWarning('fail to call new page');
@@ -211,6 +230,8 @@ export function requestAds(divIds: string[]) {
 
     const waitingQueue: number[] = [];
 
+    const HBServiceAndContexts: Array<[Service<any>, Context<any>]> = [];
+
     HBs.forEach((hb, bidderId) => {
       waitingQueue.push(bidderId);
 
@@ -229,15 +250,19 @@ export function requestAds(divIds: string[]) {
         const loadingTime = Date.now() - startTime;
         const timeout = bidderTimeout - loadingTime;
 
+        const context = hb.define(ids);
+        context.done = callback;
+        context.timeout = timeout;
+
+        HBServiceAndContexts.push([hb, context]);
+
         if (timeout <= 0) {
           // loading time is too long
-          callback();
+          context.done();
           return;
         }
 
-        const [hbNewSlots, hbRefreshSlots] = hb.defineAds(ids);
-
-        hb.requestAds(hbNewSlots, hbRefreshSlots, timeout, callback);
+        hb.requestHB(context);
       });
     });
 
@@ -254,21 +279,19 @@ export function requestAds(divIds: string[]) {
       calledBidderReady = true;
 
       gpt.waitReady(() => {
-        const [gptNewSlots, gptRefreshSlots] = gpt.defineAds(ids);
+        const context = gpt.define(ids);
 
-        gpt.setTargetingForGPT(gptNewSlots, gptRefreshSlots, false);
-
-        HBs.forEach((hb, hbIndex) => {
-          const isRequestTimeout = waitingQueue.indexOf(hbIndex) >= 0;
-          if (isRequestTimeout) {
-            // something bad happens, some bidder do not be able to do it on time
-            // warning that some bidder cannot make it on time
-            hb.emitWarning(`Did not callback before timeout`);
+        HBServiceAndContexts.forEach(([HBService, HBContext]) => {
+          try {
+            if (HBContext.beforeRequestGPT !== null) {
+              HBContext.beforeRequestGPT();
+            }
+          } catch (e) {
+            HBService.emitWarning('fail to call beforeRequestGPT');
           }
-          hb.setTargetingForGPT([], [], isRequestTimeout);
         });
 
-        gpt.requestAds(gptNewSlots, gptRefreshSlots, 0, () => { /* noop */ });
+        gpt.requestGPT(context);
       });
     }
   }, throttleTimeout);
@@ -284,9 +307,9 @@ export function destroyAds(divIds: string[]) {
     delete requestQueue[divId];
     delete requestedAds[divId];
   });
-  HBs.forEach(hb => hb.destroyAds(divIds));
+  HBs.forEach(hb => hb.destroy(divIds));
   if (GPT) {
-    GPT.destroyAds(divIds);
+    GPT.destroy(divIds);
   }
 }
 
