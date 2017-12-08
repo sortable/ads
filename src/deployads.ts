@@ -23,11 +23,11 @@ declare module DeployAds {
    */
   type AdId = string
 
-  /** Definition of an Ad Unit */
+  /** Definition of an AdUnit */
   interface AdUnit {
-    /** The id of the ad unit. */
+    /** The id of the AdUnit. */
     divId: AdId;
-    /** The sizes of the ad unit */
+    /** The sizes of the AdUnit */
     sizes: Array<AdSize>;
   }
 
@@ -53,12 +53,12 @@ declare module DeployAds {
     setTargetingForGPTAsync(ids: Array<AdId>): void;
 
     /**
-     * Cleanup any resources associated with an ad unit. Call this when the div is removed from the page
+     * Clean up any resources associated with an AdUnit. Call this when the div is removed from the page.
      */
     destroyAds(ids: Array<AdId>): void;
 
     /**
-     * Indicate that bids fetech from this point forward are for a new page of a Single Page Application (e.g. React or Angular).
+     * Indicate that bids fetched from this point forward are for a new page of a Single Page Application (e.g. using React or Angular).
      * This should be called after the `history.pushState()` has been called to update the url.
      */
     newPage(): void;
