@@ -253,14 +253,17 @@ export function requestAds(divIds: string[]) {
         const context = hb.define(ids);
         context.timeout = timeout;
         context.done = () => {
-          // remove that index from waitingQueue
-          const index = waitingQueue.indexOf(bidderId);
-          if (index >= 0) {
-            waitingQueue.splice(index, 1);
-          }
-          if (waitingQueue.length === 0) {
-            bidsReady();
-          }
+          // make it async to avoid race condition
+          setTimeout(() => {
+            // remove that index from waitingQueue
+            const index = waitingQueue.indexOf(bidderId);
+            if (index >= 0) {
+              waitingQueue.splice(index, 1);
+            }
+            if (waitingQueue.length === 0) {
+              bidsReady();
+            }
+          }, 0);
         };
 
         if (timeout <= 0) {
