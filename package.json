@@ -2,12 +2,13 @@
   "name": "@sortable/ads",
   "version": "0.0.1",
   "description": "",
-  "main": "dist/ads.js",
-  "types": "dist/ads.d.js",
+  "main": "lib/ads.js",
+  "types": "lib/ads.d.ts",
   "scripts": {
-    "test": "npm run build && mocha dist/**/*.test.js",
-    "build": "tsc",
-    "prepublish": "npm run build"
+    "test": "npm run build && mocha lib/**/*.test.js",
+    "clean": "rm -rf _bundles lib lib-esm",
+    "build": "npm run clean && tsc && tsc -m es6 --outDir lib-esm && webpack",
+    "start": "webpack-dev-server"
   },
   "author": "sortable",
   "license": "",
@@ -16,8 +17,12 @@
     "@types/mocha": "^2.2.44",
     "chai": "^4.1.2",
     "mocha": "^4.0.1",
-    "typedoc": "^0.9.0",
+    "ts-loader": "^3.2.0",
     "tslint": "^5.8.0",
-    "typescript": "^2.6.2"
+    "tslint-loader": "^3.5.3",
+    "typedoc": "^0.9.0",
+    "typescript": "^2.6.2",
+    "webpack": "^3.10.0",
+    "webpack-dev-server": "^2.11.1"
   }
 }
