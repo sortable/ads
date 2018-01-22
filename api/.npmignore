@@ -1,0 +1,7 @@
+.*
+**/tsconfig.json
+**/webpack.config.js
+**/tags
+
+node_modules
+src
