@@ -1,3 +1,17 @@
+let debug = false;
+
+export function setDebug(dbg: boolean) {
+  debug = dbg;
+}
+
+function log(msg: string, args: any[] = []) {
+  if (debug) {
+    console.log('LOG: ' + msg);
+    for (const arg of args) {
+      console.log(arg);
+    }
+  }
+}
 
 export type CallbackFunction = () => void;
 
@@ -40,6 +54,7 @@ class Service<T> {
   private queue: CallbackFunction[];
 
   constructor(config: Config<T>, name: string) {
+    log('Creating Service ' + name);
     this.name = name;
     this.config = config;
     this.units = {};
@@ -72,6 +87,7 @@ class Service<T> {
   }
 
   public define(divIds: string[]): Context<T> {
+    log('Service define divs:', [divIds]);
     const newIds: string[] = [];
     const newUnits: T[] = [];
     const refreshIds: string[] = [];
@@ -83,12 +99,14 @@ class Service<T> {
       }
       if (this.units.hasOwnProperty(divId)) {
         refreshUnits.push(this.units[divId]);
+        refreshIds.push(divId);
       } else {
         try {
           const slot = this.config.defineUnit(divId);
           if (slot !== null && slot !== undefined) {
             this.units[divId] = slot;
             newUnits.push(slot);
+            newIds.push(divId);
           }
         } catch (e) {
           this.emitWarning('fail to define ad');
@@ -109,6 +127,7 @@ class Service<T> {
   }
 
   public requestHB(context: Context<T>) {
+    log('Service requesting HB with context:', [context]);
     try {
       if (this.config.requestHB != null) {
         this.config.requestHB(context);
@@ -120,6 +139,7 @@ class Service<T> {
   }
 
   public requestGPT(context: Context<T>) {
+    log('Service requesting GPT with context:', [context]);
     try {
       if (this.config.requestGPT != null) {
         this.config.requestGPT(context);
@@ -131,6 +151,7 @@ class Service<T> {
   }
 
   public destroy(divIds: string[]) {
+    log('Service destroying divs:', [divIds]);
     if (!this.ready) {
       return;
     }
@@ -151,6 +172,7 @@ class Service<T> {
   }
 
   public loadNewPage() {
+    log('Service loading new page');
     if (!this.ready) {
       return;
     }
@@ -213,6 +235,7 @@ export function getAds(): string[] {
  * @param divIds
  */
 export function requestAds(divIds: string[]) {
+  log('Requesting ads for divs:', [divIds]);
   divIds.forEach((divId) => {
     requestQueue[divId] = 1;
     requestedAds[divId] = 1;
@@ -228,7 +251,7 @@ export function requestAds(divIds: string[]) {
   // Now, compiler knows that `gpt` is not null.
   const gpt = GPT;
 
-  requestThrottleTimeout = setTimeout(() => {
+  requestThrottleTimeout = window.setTimeout(() => {
     const ids = Object.keys(requestQueue);
 
     // reset queue
@@ -243,10 +266,12 @@ export function requestAds(divIds: string[]) {
 
     let calledBidderReady = false;
 
+    log('Request ads from HBs');
     HBs.forEach((hb, bidderId) => {
       waitingQueue.push(bidderId);
 
       hb.waitReady(() => {
+        log('HB ready');
         const loadingTime = Date.now() - startTime;
         const timeout = bidderTimeout - loadingTime;
 
@@ -281,7 +306,7 @@ export function requestAds(divIds: string[]) {
     if (waitingQueue.length === 0) {
       bidsReady();
     } else {
-      setTimeout(() => {
+      window.setTimeout(() => {
         bidsReady();
       }, bidderTimeout + 100); // 100ms as buffer time
     }
@@ -292,7 +317,9 @@ export function requestAds(divIds: string[]) {
       }
       calledBidderReady = true;
 
+      log('Request ads from GPT');
       gpt.waitReady(() => {
+        log('GPT ready');
         const context = gpt.define(ids);
 
         HBServiceAndContexts.forEach(([HBService, HBContext]) => {

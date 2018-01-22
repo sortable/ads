@@ -3,7 +3,7 @@
  * Sortable Container API
  */
 
-declare module DeployAds {
+export declare module DeployAds {
 
   interface CommandQueue {
     /**
