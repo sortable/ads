@@ -1,0 +1,57 @@
+<html>
+<head>
+<script type="text/javascript" src="https://www.googletagservices.com/tag/js/gpt.js" async></script>
+<script type="text/javascript" src="../_bundles/ads-manager.js"></script>
+<script>
+// ads-manager initialization
+AdsManager.setDebug(true);
+AdsManager.setBidderTimeout(1000);
+
+function registerGPT() {
+  AdsManager.registerGPT({
+    // initialize GPT here, and call cb() in your GPT command/callback
+    init(cb) {
+      window.googletag = window.googletag || {};
+      window.googletag.cmd = window.googletag.cmd || [];
+      window.googletag.cmd.push(() => {
+        window.googletag.pubads().disableInitialLoad();
+        window.googletag.pubads().enableSingleRequest();
+        window.googletag.enableServices();
+        cb();
+      });
+    },
+    // define your slots here, and they will be matched with divs by id
+    defineUnit(divId) {
+      if (divId === 'test') {
+        // the ad unit used here is the example provided by Google for
+        // testing GPT on a test page
+        return window.googletag.defineSlot('/6355419/Travel/Europe/France/Paris',
+            [300, 250], divId).addService(window.googletag.pubads());
+      }
+    },
+    // make the request to GPT
+    requestGPT(context) {
+      context.newIds.forEach((newIds) => {
+        window.googletag.display(newIds);
+      });
+      window.googletag.pubads().refresh(context.units);
+    },
+  });
+}
+
+// initialize ads-manager, and then request ads by the div id
+registerGPT();
+</script>
+</head>
+
+<body>
+<h2>GPT Only Test</h2>
+<h5>Chrome Ad</h5>
+<div id='test'>
+  <script type='text/javascript'>
+    AdsManager.requestAds(['test']);
+  </script>
+</div>
+
+</body>
+</html>
