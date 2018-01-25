@@ -3,7 +3,7 @@
   "version": "0.0.2",
   "description": "",
   "main": "dist/sortableads.js",
-  "types": "src/types.d.js",
+  "types": "src/types.d.ts",
   "scripts": {
     "test": "npm run build && mocha dist/**/*.test.js",
     "build": "tsc",
