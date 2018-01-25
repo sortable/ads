@@ -212,7 +212,7 @@ export default class Manager extends EventEmitter<SortableAds.EventMap> {
 
     const waitingQueue: number[] = [];
 
-    const HBServiceAndContexts: Array<[HBService, SortableAds.Context<any>]> = [];
+    const HBServiceAndContexts: Array<[HBService, SortableAds.HBContext<any>]> = [];
 
     let calledBidsReady = false;
 
@@ -265,12 +265,11 @@ export default class Manager extends EventEmitter<SortableAds.EventMap> {
         const activeIds = ids.filter(id => this.requestedAds[id]);
 
         const context = hb.define(activeIds);
-        context.timeout = timeout;
-        context.done = done;
+        const hbContext: SortableAds.HBContext<any> = { ...context, done, timeout, beforeRequestGPT: null };
 
-        HBServiceAndContexts.push([hb, context]);
+        HBServiceAndContexts.push([hb, hbContext]);
 
-        hb.requestHB(context);
+        hb.requestHB(hbContext);
       });
     });
 

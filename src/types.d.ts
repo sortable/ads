@@ -4,15 +4,20 @@ declare namespace SortableAds {
   type CallbackFunction = () => void;
 
   interface Context<T> {
-    beforeRequestGPT: CallbackFunction | null;
-    done: CallbackFunction;
     ids: string[];
     newIds: string[];
     newUnits: T[];
     refreshIds: string[];
     refreshUnits: T[];
-    timeout: number;
     units: T[];
+  }
+
+  interface GPTContext<T> extends Context<T> {}
+
+  interface HBContext<T> extends Context<T> {
+    beforeRequestGPT: CallbackFunction | null;
+    timeout: number;
+    done: CallbackFunction;
   }
 
   interface Config<T> {
@@ -23,12 +28,12 @@ declare namespace SortableAds {
   }
 
   interface GPTConfig<T> extends Config<T> {
-    requestGPT: (context: Context<T>) => void;
+    requestGPT: (context: GPTContext<T>) => void;
   }
 
   interface HBConfig<T> extends Config<T> {
     name: string;
-    requestHB: (context: Context<T>) => void;
+    requestHB: (context: HBContext<T>) => void;
   }
 
   interface GPTServiceConfig<T> extends GPTConfig<T> {

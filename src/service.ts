@@ -61,19 +61,16 @@ export default class Service<T> {
       }
     });
     return {
-      beforeRequestGPT: null,
-      done: () => { /* noop */ },
       ids: newIds.concat(refreshIds),
       newIds,
       newUnits,
       refreshIds,
       refreshUnits,
-      timeout: 0,
       units: newUnits.concat(refreshUnits),
     };
   }
 
-  public requestHB(context: SortableAds.Context<T>) {
+  public requestHB(context: SortableAds.HBContext<T>) {
     this.tryCatch('requestHB', () => {
       if (this.config.type === 'HB') {
         this.config.requestHB(context);
@@ -81,7 +78,7 @@ export default class Service<T> {
     });
   }
 
-  public executeBeforeRequestGPT(context: SortableAds.Context<T>) {
+  public executeBeforeRequestGPT(context: SortableAds.HBContext<T>) {
     this.tryCatch('context.beforeRequestGPT', () => {
       if (context.beforeRequestGPT !== null) {
         context.beforeRequestGPT();
@@ -89,7 +86,7 @@ export default class Service<T> {
     });
   }
 
-  public requestGPT(context: SortableAds.Context<T>) {
+  public requestGPT(context: SortableAds.GPTContext<T>) {
     this.tryCatch('requestGPT', () => {
       if (this.config.type === 'GPT') {
         this.config.requestGPT(context);
