@@ -30,7 +30,7 @@ if (!api.apiReady) {
   api.setBidderTimeout = x => manager.setBidderTimeout(x);
   api.getAdElementIds = () => manager.getAdElementIds();
   api.requestAds = x => manager.requestAds(x);
-  api.detroyAds = x => manager.destroyAds(x);
+  api.destroyAds = x => manager.destroyAds(x);
   api.loadNewPage = () => manager.loadNewPage();
   api.registerGPT = x => manager.registerGPT(x);
   api.registerHB = x => manager.registerHB(x);

@@ -30,11 +30,16 @@ export default class Manager extends EventEmitter<SortableAds.EventMap> {
     super();
     this.bidderTimeout = 1500; // default
     this.throttleTimeout = 50; // default
+    this.throttleTimer = null;
 
     this.HBServices = [];
     this.GPTService = null;
 
+    this.requestQueue = {};
+    this.requestedAds = {};
+
     this.debug = false;
+    this.debugListeners = [];
   }
 
   public getDebug(): boolean {

@@ -100,7 +100,7 @@ declare namespace SortableAds {
     /**
      * Destroy ads for provided element ids
      */
-    detroyAds(elementIds: string[]): void;
+    destroyAds(elementIds: string[]): void;
 
     /**
      * Indicate that it's a new page
