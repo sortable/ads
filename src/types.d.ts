@@ -151,7 +151,7 @@ declare namespace SortableAds {
 
 declare var sortableads: SortableAds.API;
 
-declare namespace DeploayAds {
+declare namespace DeployAds {
 
   type AdSize = [number, number];
 
@@ -204,4 +204,4 @@ declare namespace DeploayAds {
 
 }
 
-declare var deployads: DeploayAds.API;
+declare var deployads: DeployAds.API;
