@@ -25,7 +25,7 @@ if (!api.apiReady) {
   api.setDebug = x => manager.setDebug(x);
   api.getBidderTimeout = () => manager.getBidderTimeout();
   api.setBidderTimeout = x => manager.setBidderTimeout(x);
-  api.getAdElementIds = () => manager.getAdElementIds();
+  api.getRequestedElementIds = () => manager.getRequestedElementIds();
   api.requestAds = x => manager.requestAds(x);
   api.destroyAds = x => manager.destroyAds(x);
   api.loadNewPage = () => manager.loadNewPage();
@@ -37,7 +37,7 @@ if (!api.apiReady) {
   api.apiReady = true;
 
   // execute all queued operations
-  const execute = (fn: () => void) => manager.execute(fn);
+  const execute = (fn: () => void) => manager.tryCatch('push', fn);
   api.push = fn => {
     execute(fn);
     return api.length;

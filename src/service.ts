@@ -1,25 +1,25 @@
 import EventEmitter from './event-emitter';
 
 export default class Service<T> {
-  private config: SortableAds.GeneralConfig<T>;
+  private emitter: EventEmitter<SortableAds.EventMap>;
+  private config: SortableAds.GeneralServiceConfig<T>;
   private units: { [index: string]: T };
   private ready: boolean;
   private queue: SortableAds.CallbackFunction[];
-  private emitter: EventEmitter<SortableAds.EventMap>;
 
   constructor(
-    config: SortableAds.GeneralConfig<T>,
     emitter: EventEmitter<SortableAds.EventMap>,
+    config: SortableAds.GeneralServiceConfig<T>,
   ) {
+    this.emitter = emitter;
     this.config = config;
     this.units = {};
     this.ready = false;
     this.queue = [];
-    this.emitter = emitter;
 
     this.config.init(() => {
       this.ready = true;
-      this.queue.forEach((cb) => {
+      this.queue.forEach(cb => {
         cb();
       });
       this.queue = [];
@@ -44,7 +44,7 @@ export default class Service<T> {
         refreshIds.push(elementId);
         refreshUnits.push(this.units[elementId]);
       } else {
-        try {
+        this.tryCatch('defineUnit', () => {
           const slot = this.config.defineUnit(elementId);
           if (slot == null) {
             this.emitter.emitEvent('noUnitDefined', {
@@ -57,12 +57,7 @@ export default class Service<T> {
             newIds.push(elementId);
             newUnits.push(slot);
           }
-        } catch (error) {
-          this.emitter.emitEvent('error', {
-            error,
-            message: 'fail to define ad',
-          });
-        }
+        });
       }
     });
     return {
@@ -79,68 +74,65 @@ export default class Service<T> {
   }
 
   public requestHB(context: SortableAds.Context<T>) {
-    try {
+    this.tryCatch('requestHB', () => {
       if (this.config.type === 'HB') {
         this.config.requestHB(context);
       }
-    } catch (error) {
-      this.emitter.emitEvent('error', {
-        error,
-        message: 'fail to request hb',
-      });
-      context.done();
-    }
+    });
+  }
+
+  public executeBeforeRequestGPT(context: SortableAds.Context<T>) {
+    this.tryCatch('context.beforeRequestGPT', () => {
+      if (context.beforeRequestGPT !== null) {
+        context.beforeRequestGPT();
+      }
+    });
   }
 
   public requestGPT(context: SortableAds.Context<T>) {
-    try {
+    this.tryCatch('requestGPT', () => {
       if (this.config.type === 'GPT') {
         this.config.requestGPT(context);
       }
-    } catch (error) {
-      this.emitter.emitEvent('error', {
-        error,
-        message: 'fail to request gpt',
-      });
-      context.done();
-    }
+    });
   }
 
   public destroy(divIds: string[]) {
     if (!this.ready) {
       return;
     }
-    try {
-      const units: T[] = [];
-      divIds.forEach((divId) => {
-        if (this.units.hasOwnProperty(divId)) {
-          units.push(this.units[divId]);
-          delete this.units[divId];
-        }
-      });
+    const units: T[] = [];
+    divIds.forEach(divId => {
+      if (this.units.hasOwnProperty(divId)) {
+        units.push(this.units[divId]);
+        delete this.units[divId];
+      }
+    });
+    this.tryCatch('destroyUnits', () => {
       if (this.config.destroyUnits) {
         this.config.destroyUnits(units);
       }
-    } catch (error) {
-      this.emitter.emitEvent('error', {
-        error,
-        message: 'fail to destroy ads',
-      });
-    }
+    });
   }
 
   public loadNewPage() {
     if (!this.ready) {
       return;
     }
-    try {
+    this.tryCatch('loadNewPage', () => {
       if (this.config.loadNewPage) {
         this.config.loadNewPage();
       }
+    });
+  }
+
+  private tryCatch(name: string, fn: () => void): void {
+    try {
+      fn();
     } catch (error) {
       this.emitter.emitEvent('error', {
         error,
-        message: 'fail to call new page',
+        message: `${this.config.type} (${this.config.name}) has exception when call ${name}`,
       });
     }
   }

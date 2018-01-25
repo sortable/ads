@@ -9,7 +9,7 @@ describe('test sortableads API', () => {
     assert.equal(typeof sortableads.setDebug, 'function');
     assert.equal(typeof sortableads.getBidderTimeout, 'function');
     assert.equal(typeof sortableads.setBidderTimeout, 'function');
-    assert.equal(typeof sortableads.getAdElementIds, 'function');
+    assert.equal(typeof sortableads.getRequestedElementIds, 'function');
     assert.equal(typeof sortableads.requestAds, 'function');
     assert.equal(typeof sortableads.destroyAds, 'function');
     assert.equal(typeof sortableads.loadNewPage, 'function');

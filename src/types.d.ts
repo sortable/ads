@@ -16,7 +16,6 @@ declare namespace SortableAds {
   }
 
   interface Config<T> {
-    name: string;
     init: (cb: CallbackFunction) => void;
     defineUnit: (elementId: string) => T | null | undefined;
     destroyUnits?: (units: T[]) => void;
@@ -24,16 +23,25 @@ declare namespace SortableAds {
   }
 
   interface GPTConfig<T> extends Config<T> {
-    type: 'GPT';
     requestGPT: (context: Context<T>) => void;
   }
 
   interface HBConfig<T> extends Config<T> {
-    type: 'HB';
+    name: string;
     requestHB: (context: Context<T>) => void;
   }
 
-  type GeneralConfig<T> = GPTConfig<T> | HBConfig<T>;
+  interface GPTServiceConfig<T> extends GPTConfig<T> {
+    name: string;
+    type: 'GPT';
+  }
+
+  interface HBServiceConfig<T> extends HBConfig<T> {
+    name: string;
+    type: 'HB';
+  }
+
+  type GeneralServiceConfig<T> = GPTServiceConfig<T> | HBServiceConfig<T>;
 
   type GoogletagSlot = any;
 
@@ -88,9 +96,9 @@ declare namespace SortableAds {
     setBidderTimeout(timeout: number): void;
 
     /**
-     * Get the list of element ids for requested ads
+     * Get the list of requested element ids
      */
-    getAdElementIds(): string[];
+    getRequestedElementIds(): string[];
 
     /**
      * Request ads for provided element ids
