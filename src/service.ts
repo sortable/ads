@@ -26,10 +26,6 @@ export default class Service<T> {
     });
   }
 
-  public emitError(msg: string, err?: Error) {
-    console.error(this.config.type, msg, err || '');
-  }
-
   public waitReady(cb: SortableAds.CallbackFunction) {
     if (this.ready) {
       cb();
@@ -45,24 +41,27 @@ export default class Service<T> {
     const refreshUnits: T[] = [];
     elementIds.forEach(elementId => {
       if (this.units.hasOwnProperty(elementId)) {
+        refreshIds.push(elementId);
         refreshUnits.push(this.units[elementId]);
       } else {
         try {
           const slot = this.config.defineUnit(elementId);
           if (slot == null) {
-            // emit message
             this.emitter.emitEvent('noUnitDefined', {
               elementId,
               name: this.config.name,
               type: this.config.type,
             });
-            // extends name => 'noUnitDefined'
           } else {
             this.units[elementId] = slot;
+            newIds.push(elementId);
             newUnits.push(slot);
           }
-        } catch (e) {
-          this.emitError('fail to define ad'); // Error type, xxx
+        } catch (error) {
+          this.emitter.emitEvent('error', {
+            error,
+            message: 'fail to define ad',
+          });
         }
       }
     });
@@ -84,8 +83,11 @@ export default class Service<T> {
       if (this.config.type === 'HB') {
         this.config.requestHB(context);
       }
-    } catch (e) {
-      this.emitError('fail to request hb');
+    } catch (error) {
+      this.emitter.emitEvent('error', {
+        error,
+        message: 'fail to request hb',
+      });
       context.done();
     }
   }
@@ -95,8 +97,11 @@ export default class Service<T> {
       if (this.config.type === 'GPT') {
         this.config.requestGPT(context);
       }
-    } catch (e) {
-      this.emitError('fail to request gpt');
+    } catch (error) {
+      this.emitter.emitEvent('error', {
+        error,
+        message: 'fail to request gpt',
+      });
       context.done();
     }
   }
@@ -116,8 +121,11 @@ export default class Service<T> {
       if (this.config.destroyUnits) {
         this.config.destroyUnits(units);
       }
-    } catch (e) {
-      this.emitError('fail to destroy ads');
+    } catch (error) {
+      this.emitter.emitEvent('error', {
+        error,
+        message: 'fail to destroy ads',
+      });
     }
   }
 
@@ -129,8 +137,11 @@ export default class Service<T> {
       if (this.config.loadNewPage) {
         this.config.loadNewPage();
       }
-    } catch (e) {
-      this.emitError('fail to call new page');
+    } catch (error) {
+      this.emitter.emitEvent('error', {
+        error,
+        message: 'fail to call new page',
+      });
     }
   }
 }
