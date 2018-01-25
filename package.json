@@ -2,8 +2,8 @@
   "name": "@sortable/ads",
   "version": "0.0.1",
   "description": "",
-  "main": "dist/ads.js",
-  "types": "dist/ads.d.js",
+  "main": "dist/sortableads.js",
+  "types": "src/types.d.js",
   "scripts": {
     "test": "npm run build && mocha dist/**/*.test.js",
     "build": "tsc",
