@@ -21,6 +21,15 @@ describe('test sortableads API', () => {
     assert.equal(typeof sortableads.push, 'function');
   });
 
+  it('should have correct version', async () => {
+    // @ts-ignore: this should only be tested in node env
+    if (typeof require !== 'undefined' && typeof __dirname !== 'undefined') {
+      // @ts-ignore
+      const version = JSON.parse(require('fs').readFileSync(__dirname + '/../package.json')).version;
+      assert.equal(sortableads.getVersion(), version);
+    }
+  });
+
   it('should have apiReady now', async () => {
     assert.equal(sortableads.apiReady, true);
   });

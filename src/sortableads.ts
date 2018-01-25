@@ -20,10 +20,7 @@ const api: SortableAds.API = GLOBAL.sortableads = GLOBAL.sortableads || [];
 
 if (!api.apiReady) {
   const manager = new Manager();
-  api.getVersion = () => {
-    // TODO: replace $SORTABLEADS_VERSION$ with version from package.json via webpack
-    return '$SORTABLEADS_VERSION$';
-  };
+  api.getVersion = () => '0.0.2';
   api.getDebug = () => manager.getDebug();
   api.setDebug = x => manager.setDebug(x);
   api.getBidderTimeout = () => manager.getBidderTimeout();
