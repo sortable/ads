@@ -4,10 +4,9 @@
     "target": "es5",
     "lib": ["es2015", "dom"],
     "strict": true,
-    "declaration": true,
     "outDir": "./dist"
   },
   "include": [
-    "src/**/*"
+    "src/*.ts"
   ]
 }
