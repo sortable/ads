@@ -15,7 +15,7 @@ const getGlobal = () => {
   return {}; // we don't care
 };
 
-const GLOBAL = getGlobal();
+const GLOBAL: any = getGlobal();
 const api: SortableAds.API = GLOBAL.sortableads = GLOBAL.sortableads || [];
 
 if (!api.apiReady) {
