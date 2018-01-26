@@ -9,6 +9,11 @@ const debugEvents: SortableAds.EventKey[] = [
   'eventListenerError',
   'error',
   'warning',
+  'requestAds',
+  'destroyAds',
+  'loadNewPage',
+  'registerGPT',
+  'registerHB',
   'noUnitDefined',
 ];
 
@@ -102,7 +107,7 @@ export default class Manager extends EventEmitter<SortableAds.EventMap> {
    */
   public destroyAds(elementIds: string[]): void {
     this.tryCatch('destroyAds', () => {
-      // emitEvent('sortableads.destroyAds', { })
+      this.emitEvent('destroyAds', { elementIds });
       elementIds.forEach(elementid => {
         delete this.requestQueue[elementid];
         delete this.requestedAds[elementid];
@@ -116,6 +121,7 @@ export default class Manager extends EventEmitter<SortableAds.EventMap> {
 
   public loadNewPage(): void {
     this.tryCatch('loadNewPage', () => {
+      this.emitEvent('loadNewPage', {});
       this.HBServices.forEach(hb => hb.loadNewPage());
       if (this.GPTService) {
         this.GPTService.loadNewPage();
@@ -125,6 +131,7 @@ export default class Manager extends EventEmitter<SortableAds.EventMap> {
 
   public registerGPT(config: SortableAds.GPTConfig<SortableAds.GoogletagSlot>) {
     this.tryCatch('registerGPT', () => {
+      this.emitEvent('registerGPT', { config });
       if (this.GPTService === null) {
         this.GPTService = new Service(this, {
           ...config,
@@ -141,6 +148,7 @@ export default class Manager extends EventEmitter<SortableAds.EventMap> {
 
   public registerHB(config: SortableAds.HBConfig<any>) {
     this.tryCatch('registerHB', () => {
+      this.emitEvent('registerHB', { config });
       this.HBServices.push(new Service(this, {
         ...config,
         name: config.name || 'header bidder',
@@ -165,6 +173,7 @@ export default class Manager extends EventEmitter<SortableAds.EventMap> {
 
   public requestAds(elementIds: string[]): void {
     this.tryCatch('requestAds', () => {
+      this.emitEvent('requestAds', { elementIds });
       elementIds.forEach(elementId => {
         this.requestQueue[elementId] = true;
         this.requestedAds[elementId] = true;

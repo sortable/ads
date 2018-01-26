@@ -55,19 +55,32 @@ declare namespace SortableAds {
       error: any,
       listener: (event: any) => void,
       type: string,
-    },
+    };
     'error': {
       error: any,
       message: string,
-    },
+    };
     'warning': {
       message: string,
-    },
+    };
+    'requestAds': {
+      elementIds: string[]
+    };
+    'destroyAds': {
+      elementIds: string[]
+    };
+    'loadNewPage': {},
+    'registerGPT': {
+      config: GPTConfig<GoogletagSlot>
+    };
+    'registerHB': {
+      config: HBConfig<any>
+    };
     'noUnitDefined': {
       elementId: string,
       name: string,
       type: string,
-    },
+    };
   }
 
   type EventKey = keyof EventMap;
