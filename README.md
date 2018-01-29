@@ -9,7 +9,13 @@ This repo contains libraries, examples and documentation for publishers integrat
 
 The ad manager is a utility library that a publisher can embed on a page to help manage multiple header bidder frameworks on the same page.
 
-It was written around GPT and DFP, so that multiple HB demand sources can compete to target DFP line items with a higher rate. The main issue with interacting with DFP is that if you are batching requests instead of using single request mode (which you should be doing to save on network latency), requesting an ad for an arbitrary ad slot will send a request for all the ad slots. There is no way to specify which ad slots you want to batch requests for. This is obviously undesirable, so you must ensure that you have set targeting on all ad units before making the request. This library will handles the administrative work of managing the life cycle of your ad units, so that requests are made properly.
+The main goals of this library are to:
+
+1. Provide an API that separates the concerns of initializing and configuring various HB solutions, mapping ads to DOM elements, making requests, and rendering ads.
+2. Be general enough so as to make it easy to integrate an HB into the framework, yet have its lifecycle explicitly defined and managed by the framework.
+3. Play nice with SPA frameworks such as Angular or React. The ad lifecycle should be divided into several states that make it easy to integrate with Virtual DOM / Component lifecycle such as in React.
+
+In short, this library will handle the administrative work of managing the life cycle of your ad units, so that requests are made properly.
 
 ### Build
 
@@ -34,4 +40,4 @@ The [examples](/examples) directory contains some example integrations using the
 
 ## Sortable Container API
 
-The [src/deployads.ts](/src/deployads.ts) documents the Sortable container API. Although it's recommended to use this API in combination with the ad manager, it's provided for reference.
+The DeployAds API in [src/types.d.ts](/src/types.d.ts) documents the types for the Sortable container API. Although it's recommended to use this API in combination with the ad manager, it's provided for reference.
