@@ -5,9 +5,23 @@
   "main": "dist/sortableads.js",
   "types": "src/types.d.ts",
   "scripts": {
-    "test": "npm run build && mocha dist/**/*.test.js",
-    "build": "tsc",
-    "prepublish": "npm run build"
+    "test": "npm run build && nyc mocha -r ts-node/register src/**/*.test.ts",
+    "clean": "rm -rf dist",
+    "build": "npm run clean && webpack",
+    "serve": "webpack-dev-server",
+    "docs": "typedoc --mode modules --out docs src",
+    "prepublishOnly": "npm run docs && npm run build"
+  },
+  "nyc": {
+    "extension": [
+      ".ts"
+    ],
+    "include": [
+      "**/*.ts"
+    ],
+    "exclude": [
+      "**/*.test.ts"
+    ]
   },
   "author": "sortable",
   "license": "",
@@ -16,8 +30,14 @@
     "@types/mocha": "^2.2.44",
     "chai": "^4.1.2",
     "mocha": "^4.0.1",
-    "typedoc": "^0.9.0",
+    "nyc": "^11.4.1",
+    "ts-loader": "^3.3.1",
+    "ts-node": "^4.1.0",
     "tslint": "^5.8.0",
-    "typescript": "^2.6.2"
+    "tslint-loader": "^3.5.3",
+    "typedoc": "^0.9.0",
+    "typescript": "^2.6.2",
+    "webpack": "^3.10.0",
+    "webpack-dev-server": "^2.11.1"
   }
 }
