@@ -239,6 +239,10 @@ export default class Manager extends EventEmitter<SortableAds.EventMap> {
         // We need to filter out the destroyed ids during this period
         const activeIds = ids.filter(id => this.requestedAds[id]);
 
+        if (activeIds.length === 0) {
+          return;
+        }
+
         const context = gpt.define(activeIds);
 
         HBServiceAndContexts.forEach(([hb, hbContext]) => {
