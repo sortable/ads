@@ -1,9 +1,9 @@
 import { assert } from 'chai';
 import './sortableads';
 
-describe('test sortableads API', () => {
+describe('sortableads', () => {
 
-  it('should include all API', async () => {
+  it('should include all API methods', async () => {
     assert.equal(typeof sortableads.getVersion, 'function');
     assert.equal(typeof sortableads.getDebug, 'function');
     assert.equal(typeof sortableads.setDebug, 'function');
@@ -30,7 +30,7 @@ describe('test sortableads API', () => {
     }
   });
 
-  it('should have apiReady now', async () => {
+  it('should have apiReady set to true', async () => {
     assert.equal(sortableads.apiReady, true);
   });
 
