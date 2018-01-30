@@ -282,6 +282,7 @@ export default class Manager extends EventEmitter<SortableAds.EventMap> {
         const activeIds = ids.filter(id => this.requestedAds[id]);
 
         if (activeIds.length === 0) {
+          done();
           return;
         }
 
