@@ -13,9 +13,11 @@ The main goals of this library are to:
 
 1. Provide an API that separates the concerns of initializing and configuring various HB solutions, mapping ads to DOM elements, making requests, and rendering ads.
 2. Be general enough so as to make it easy to integrate an HB into the framework, yet have its lifecycle explicitly defined and managed by the framework.
-3. Play nice with SPA frameworks such as Angular or React. The ad lifecycle should be divided into several states that make it easy to integrate with Virtual DOM / Component lifecycle such as in React.
+3. Play nice with SPA frameworks such as React. The ad lifecycle should be divided into several states that make it easy to integrate with Virtual DOM / Component lifecycle such as in React.
 
 In short, this library will handle the administrative work of managing the life cycle of your ad units, so that requests are made properly.
+
+We have also provided an example of using the Ad Manager API in a React component [here](https://github.com/sortable/react).
 
 ### Build
 
