@@ -32,16 +32,16 @@ describe('EventEmitter', () => {
   it('should be able to listen on events', async () => {
     const emitter = new EventEmitter();
     const ids = ['123', '456'];
+    let emittedIds: string[] = [];
     let listened = false;
 
     emitter.addEventListener('requestAds', event => {
-      assert.includeMembers(event.elementIds, ids);
-      listened = true;
+      emittedIds = event.elementIds;
     });
     emitter.emitEvent('requestAds', {
       elementIds: ['123', '456']
     });
-    assert.isTrue(listened);
+    assert.includeMembers(emittedIds, ids);
   });
 
   it('should be able to remove listener', async () => {

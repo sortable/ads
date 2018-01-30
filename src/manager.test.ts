@@ -10,24 +10,23 @@ class TestGPTConfig {
   loadedPage: boolean = false;
 
   constructor(opts: { [key: string]: any; } = {}) {
-    const _this = this;
     this.config = {
-      init(cb: SortableAds.CallbackFunction) {
-        _this.initialized = true;
+      init: (cb: SortableAds.CallbackFunction) => {
+        this.initialized = true;
         cb();
       },
-      defineUnit(divId: string) {
-        _this.defined = true;
+      defineUnit: (divId: string) => {
+        this.defined = true;
         return divId;
       },
-      requestGPT(context: SortableAds.GPTContext<string>) {
-        _this.requested = true;
+      requestGPT: (context: SortableAds.GPTContext<string>) => {
+        this.requested = true;
       },
-      destroyUnits(units: string[]) {
-        _this.destroyed = true;
+      destroyUnits: (units: string[]) => {
+        this.destroyed = true;
       },
-      loadNewPage() {
-        _this.loadedPage = true;
+      loadNewPage: () => {
+        this.loadedPage = true;
       }
     };
   }
@@ -42,11 +41,10 @@ class TestHBConfig {
   loadedPage: boolean = false;
 
   constructor(opts: { [key: string]: any; } = {}) {
-    const _this = this;
     this.config = {
       name: 'hb config',
-      init(cb: SortableAds.CallbackFunction) {
-        _this.initialized = true;
+      init: (cb: SortableAds.CallbackFunction) => {
+        this.initialized = true;
         if (opts.omitCb) {
           return;
         } else if (opts.delayCb > 0) {
@@ -58,23 +56,25 @@ class TestHBConfig {
           cb();
         }
       },
-      defineUnit(divId: string) {
-        _this.defined = true;
+      defineUnit: (divId: string) => {
+        this.defined = true;
         return divId;
       },
-      requestHB(context: SortableAds.HBContext<string>) {
+      requestHB: (context: SortableAds.HBContext<string>) => {
         context.done();
-        _this.requested = true;
+        this.requested = true;
       },
-      destroyUnits(units: string[]) {
-        _this.destroyed = true;
+      destroyUnits: (units: string[]) => {
+        this.destroyed = true;
       },
-      loadNewPage() {
-        _this.loadedPage = true;
+      loadNewPage: () => {
+        this.loadedPage = true;
       }
     };
   }
 };
+
+const sleep = (t: number) => new Promise(resolve => setTimeout(resolve, t));
 
 const THROTTLE_MS = 50;
 
@@ -154,13 +154,9 @@ describe('Manager', () => {
       assert.isFalse(gpt.defined);
       assert.isFalse(gpt.requested);
 
-      await new Promise((resolve) => {
-        setTimeout(() => {
-          assert.isTrue(gpt.defined);
-          assert.isTrue(gpt.requested);
-          resolve();
-        }, THROTTLE_MS);
-      });
+      await sleep(THROTTLE_MS);
+      assert.isTrue(gpt.defined);
+      assert.isTrue(gpt.requested);
     });
 
     it('should not define ad unit if the requested div was destroyed during throttling', async () => {
@@ -177,13 +173,9 @@ describe('Manager', () => {
       manager.destroyAds(['test1']);
       assert.isTrue(gpt.destroyed);
 
-      await new Promise((resolve) => {
-        setTimeout(() => {
-          assert.isFalse(gpt.defined);
-          assert.isTrue(gpt.requested);
-          resolve();
-        }, THROTTLE_MS);
-      });
+      await sleep(THROTTLE_MS);
+      assert.isFalse(gpt.defined);
+      assert.isFalse(gpt.requested);
     });
 
     it('cannot be registered twice', async () => {
@@ -192,11 +184,15 @@ describe('Manager', () => {
       manager.addEventListener('warning', event => {
         warned = true;
       });
-      const gpt = new TestGPTConfig();
-      manager.registerGPT(gpt.config);
+      const gpt1 = new TestGPTConfig();
+      const gpt2 = new TestGPTConfig();
+
+      manager.registerGPT(gpt1.config);
+      assert.isTrue(gpt1.initialized);
       assert.isFalse(warned);
 
-      manager.registerGPT(gpt.config);
+      manager.registerGPT(gpt2.config);
+      assert.isFalse(gpt2.initialized);
       assert.isTrue(warned);
     });
   });
@@ -208,14 +204,10 @@ describe('Manager', () => {
       manager.registerHB(hb.config);
 
       manager.requestAds(['test1', 'test2']);
-      await new Promise((resolve) => {
-        setTimeout(() => {
-          assert.isTrue(hb.initialized);
-          assert.isFalse(hb.defined);
-          assert.isFalse(hb.requested);
-          resolve();
-        }, THROTTLE_MS);
-      });
+      await sleep(THROTTLE_MS);
+      assert.isTrue(hb.initialized);
+      assert.isFalse(hb.defined);
+      assert.isFalse(hb.requested);
     });
 
     it('should define and request ads if GPT is instantiated', async () => {
@@ -226,21 +218,16 @@ describe('Manager', () => {
       manager.registerHB(hb.config);
 
       manager.requestAds(['test1', 'test2']);
-      await new Promise((resolve) => {
-        setTimeout(() => {
-          // HB should have finished making the request
-          assert.isTrue(hb.initialized);
-          assert.isTrue(hb.defined);
-          assert.isTrue(hb.requested);
+      await sleep(THROTTLE_MS);
+      // HB should have finished making the request
+      assert.isTrue(hb.initialized);
+      assert.isTrue(hb.defined);
+      assert.isTrue(hb.requested);
 
-          // GPT should have been requested through bidsReady()
-          assert.isTrue(gpt.initialized);
-          assert.isTrue(gpt.defined);
-          assert.isTrue(gpt.requested);
-
-          resolve();
-        }, THROTTLE_MS);
-      });
+      // GPT should have been requested through bidsReady()
+      assert.isTrue(gpt.initialized);
+      assert.isTrue(gpt.defined);
+      assert.isTrue(gpt.requested);
     });
 
     it('should not block GPT from requesting ads if HB is never initialized', async () => {
@@ -254,31 +241,22 @@ describe('Manager', () => {
       manager.registerHB(hb.config);
 
       manager.requestAds(['test1', 'test2']);
-      await new Promise((resolve) => {
-        setTimeout(() => {
-          assert.isTrue(hb.initialized);
-          assert.isFalse(hb.defined);
-          assert.isFalse(hb.requested);
 
-          assert.isTrue(gpt.initialized);
-          assert.isFalse(gpt.defined);
-          assert.isFalse(gpt.requested);
+      await sleep(THROTTLE_MS);
+      // HB does not call the callback, so will never be ready
+      assert.isTrue(hb.initialized);
+      assert.isFalse(hb.defined);
+      assert.isFalse(hb.requested);
 
-          resolve();
-        }, THROTTLE_MS);
-      });
+      assert.isTrue(gpt.initialized);
+      assert.isFalse(gpt.defined);
+      assert.isFalse(gpt.requested);
 
-      await new Promise((resolve) => {
-        setTimeout(() => {
-          // after the bidder timeout expires, we will skip the HB
-          // and continue with GPT
-          assert.isTrue(gpt.defined);
-          assert.isTrue(gpt.requested);
-
-          resolve();
-          // the 100 is a hardcoded extra delay on waiting for HB to initialize
-        }, manager.getBidderTimeout() + 100);
-      });
+      await sleep(manager.getBidderTimeout() + 100);
+      // after the bidder timeout expires, we will skip the HB
+      // and continue with GPT
+      assert.isTrue(gpt.defined);
+      assert.isTrue(gpt.requested);
     });
 
     it('should not request from the HB if it took too long to initialize', async () => {
@@ -293,21 +271,17 @@ describe('Manager', () => {
       manager.registerHB(hb.config);
 
       manager.requestAds(['test1', 'test2']);
-      await new Promise((resolve) => {
-        setTimeout(() => {
-          // HB bidReady callback should be aborted
-          assert.isTrue(hb.initialized);
-          assert.isFalse(hb.defined);
-          assert.isFalse(hb.requested);
 
-          // GPT should be requested
-          assert.isTrue(gpt.initialized);
-          assert.isTrue(gpt.defined);
-          assert.isTrue(gpt.requested);
+      await sleep(THROTTLE_MS + delay);
+      // HB bidReady callback should be aborted
+      assert.isTrue(hb.initialized);
+      assert.isFalse(hb.defined);
+      assert.isFalse(hb.requested);
 
-          resolve();
-        }, THROTTLE_MS + delay);
-      });
+      // GPT should be requested
+      assert.isTrue(gpt.initialized);
+      assert.isTrue(gpt.defined);
+      assert.isTrue(gpt.requested);
     });
   });
 
