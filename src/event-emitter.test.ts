@@ -80,16 +80,18 @@ describe('EventEmitter', () => {
 
     emitter.addEventListener('requestAds', goodListener);
     emitter.addEventListener('requestAds', badListener);
+    emitter.addEventListener('requestAds', goodListener);
     emitter.emitEvent('requestAds', {
       elementIds: ['123', '456'],
     });
-    assert.equal(count, 1);
+    assert.equal(count, 2);
   });
 
   it('should trigger "eventListenerError" event if there is an exception within listener', async () => {
     const emitter = new EventEmitter();
     const ids = ['123', '456'];
     let caught = false;
+    let eventType = '';
 
     const badListener = (event: {elementIds: string[]}) => {
       throw Error('I am so bad.');
@@ -97,7 +99,7 @@ describe('EventEmitter', () => {
 
     const errorListener = (event: {error: any, listener: (event: any) => void, type: string}) => {
       caught = true;
-      assert.equal(event.type, 'requestAds');
+      eventType = event.type;
     };
 
     emitter.addEventListener('requestAds', badListener);
@@ -108,6 +110,7 @@ describe('EventEmitter', () => {
     });
 
     assert.isTrue(caught);
+    assert.equal(eventType, 'requestAds');
   });
 
   it('should not trigger another event if there is an exception within "eventListenerError" listener', async () => {
