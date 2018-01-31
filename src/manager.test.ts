@@ -1,78 +1,79 @@
 import { assert } from 'chai';
 import Manager from './manager';
 
+/* tslint:disable:max-classes-per-file */
+
 class TestGPTConfig {
-  config: SortableAds.GPTConfig<string>;
-  initialized: boolean = false;
-  defined: boolean = false;
-  requested: boolean = false;
-  destroyed: boolean = false;
-  loadedPage: boolean = false;
+  public config: SortableAds.GPTConfig<string>;
+  public initialized: boolean = false;
+  public defined: boolean = false;
+  public requested: boolean = false;
+  public destroyed: boolean = false;
+  public loadedPage: boolean = false;
 
   constructor(opts: { [key: string]: any; } = {}) {
     this.config = {
-      init: (cb: SortableAds.CallbackFunction) => {
-        this.initialized = true;
-        cb();
-      },
       defineUnit: (divId: string) => {
         this.defined = true;
         return divId;
       },
+      destroyUnits: (units: string[]) => {
+        this.destroyed = true;
+      },
+      init: (cb: SortableAds.CallbackFunction) => {
+        this.initialized = true;
+        cb();
+      },
+      loadNewPage: () => {
+        this.loadedPage = true;
+      },
       requestGPT: (context: SortableAds.GPTContext<string>) => {
         this.requested = true;
+      },
+    };
+  }
+}
+
+class TestHBConfig {
+  public config: SortableAds.HBConfig<string>;
+  public initialized: boolean = false;
+  public defined: boolean = false;
+  public requested: boolean = false;
+  public destroyed: boolean = false;
+  public loadedPage: boolean = false;
+
+  constructor(opts: { [key: string]: any; } = {}) {
+    this.config = {
+      defineUnit: (divId: string) => {
+        this.defined = true;
+        return divId;
       },
       destroyUnits: (units: string[]) => {
         this.destroyed = true;
       },
-      loadNewPage: () => {
-        this.loadedPage = true;
-      }
-    };
-  }
-};
-
-class TestHBConfig {
-  config: SortableAds.HBConfig<string>;
-  initialized: boolean = false;
-  defined: boolean = false;
-  requested: boolean = false;
-  destroyed: boolean = false;
-  loadedPage: boolean = false;
-
-  constructor(opts: { [key: string]: any; } = {}) {
-    this.config = {
-      name: 'hb config',
       init: (cb: SortableAds.CallbackFunction) => {
         this.initialized = true;
         if (opts.omitCb) {
           return;
         } else if (opts.delayCb > 0) {
           setTimeout(() => {
-            console.log("delayed");
             cb();
           }, opts.delayCb);
         } else {
           cb();
         }
       },
-      defineUnit: (divId: string) => {
-        this.defined = true;
-        return divId;
+      loadNewPage: () => {
+        this.loadedPage = true;
       },
+      name: 'hb config',
       requestHB: (context: SortableAds.HBContext<string>) => {
         context.done();
         this.requested = true;
       },
-      destroyUnits: (units: string[]) => {
-        this.destroyed = true;
-      },
-      loadNewPage: () => {
-        this.loadedPage = true;
-      }
     };
   }
-};
+}
 
 const sleep = (t: number) => new Promise(resolve => setTimeout(resolve, t));
 
@@ -150,7 +151,7 @@ describe('Manager', () => {
 
       manager.requestAds(['test1', 'test2']);
       assert.equal(manager.getRequestedElementIds().length, 2);
-      assert.isTrue(gpt.initialized)
+      assert.isTrue(gpt.initialized);
       assert.isFalse(gpt.defined);
       assert.isFalse(gpt.requested);
 
@@ -166,7 +167,7 @@ describe('Manager', () => {
 
       manager.requestAds(['test1']);
       assert.equal(manager.getRequestedElementIds().length, 1);
-      assert.isTrue(gpt.initialized)
+      assert.isTrue(gpt.initialized);
       assert.isFalse(gpt.defined);
       assert.isFalse(gpt.requested);
 

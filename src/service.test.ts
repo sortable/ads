@@ -1,6 +1,6 @@
 import { assert } from 'chai';
-import Service from './service';
 import EventEmitter from './event-emitter';
+import Service from './service';
 
 describe('Service', () => {
 
@@ -14,15 +14,15 @@ describe('Service', () => {
     });
 
     const config: SortableAds.GPTServiceConfig<string> = {
-      name: 'GPT config',
-      type: 'GPT',
+      defineUnit: divId => {
+        return null;
+      },
       init: cb => {
         cb();
       },
-      requestGPT: context => {},
-      defineUnit: divId => {
-        return null;
-      }
+      name: 'GPT config',
+      requestGPT: context => undefined,
+      type: 'GPT',
     };
     const service = new Service(emitter, config);
     const ids = ['123', '456'];
@@ -35,24 +35,24 @@ describe('Service', () => {
   it('should emit error event when config.requestHB has an exception', async () => {
     const emitter = new EventEmitter();
     let calls = 0;
-    const error = new Error("requestHB failed;")
+    const error = new Error('requestHB failed');
 
     emitter.addEventListener('error', event => {
       calls++;
     });
-    
+
     const config: SortableAds.HBServiceConfig<string> = {
-      name: 'HB config',
-      type: 'HB',
+      defineUnit: divId => {
+        return divId;
+      },
       init: cb => {
         cb();
       },
-      requestHB: context => {
+      name: 'HB config',
+      requestHB: ctx => {
         throw error;
       },
-      defineUnit: divId => {
-        return divId;
-      }
+      type: 'HB',
     };
     const service = new Service(emitter, config);
     const ids = ['123', '456'];
@@ -67,24 +67,24 @@ describe('Service', () => {
   it('should emit error event when config.requestGPT has an exception', async () => {
     const emitter = new EventEmitter();
     let calls = 0;
-    const error = new Error("requestGPT failed;")
+    const error = new Error('requestGPT failed');
 
     emitter.addEventListener('error', event => {
       calls++;
     });
-    
+
     const config: SortableAds.GPTServiceConfig<string> = {
-      name: 'GPT config',
-      type: 'GPT',
+      defineUnit: divId => {
+        return divId;
+      },
       init: cb => {
         cb();
       },
-      requestGPT: context => {
+      name: 'GPT config',
+      requestGPT: ctx => {
         throw error;
       },
-      defineUnit: divId => {
-        return divId;
-      }
+      type: 'GPT',
     };
     const service = new Service(emitter, config);
     const ids = ['123', '456'];
@@ -102,15 +102,15 @@ describe('Service', () => {
     // => this time should be categorised as refresh ad instead of new one (in context)
     const emitter = new EventEmitter();
     const config: SortableAds.GPTServiceConfig<string> = {
-      name: 'GPT config',
-      type: 'GPT',
+      defineUnit: divId => {
+        return divId;
+      },
       init: cb => {
         cb();
       },
-      requestGPT: context => {},
-      defineUnit: divId => {
-        return divId;
-      }
+      name: 'GPT config',
+      requestGPT: context => undefined,
+      type: 'GPT',
     };
     const service = new Service(emitter, config);
     const ids = ['123', '456'];
@@ -132,15 +132,15 @@ describe('Service', () => {
     // => this time should be categorised as new ad instead of refreh one (in context)
     const emitter = new EventEmitter();
     const config: SortableAds.GPTServiceConfig<string> = {
-      name: 'GPT config',
-      type: 'GPT',
+      defineUnit: divId => {
+        return divId;
+      },
       init: cb => {
         cb();
       },
-      requestGPT: context => {},
-      defineUnit: divId => {
-        return divId;
-      }
+      name: 'GPT config',
+      requestGPT: context => undefined,
+      type: 'GPT',
     };
     const service = new Service(emitter, config);
     const ids = ['123', '456'];

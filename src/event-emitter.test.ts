@@ -9,7 +9,7 @@ describe('EventEmitter', () => {
 
     try {
       emitter.emitEvent('requestAds', {
-        elementIds: ['123', '456']
+        elementIds: ['123', '456'],
       });
     } catch (e) {
       assert.fail();
@@ -20,7 +20,7 @@ describe('EventEmitter', () => {
     const emitter = new EventEmitter();
     const ids = ['123', '456'];
 
-    const listener = (event: {elementIds: string[]}) => {};
+    const listener = (event: {elementIds: string[]}) => undefined;
 
     try {
       emitter.removeEventListener('requestAds', listener);
@@ -33,13 +33,12 @@ describe('EventEmitter', () => {
     const emitter = new EventEmitter();
     const ids = ['123', '456'];
     let emittedIds: string[] = [];
-    let listened = false;
 
     emitter.addEventListener('requestAds', event => {
       emittedIds = event.elementIds;
     });
     emitter.emitEvent('requestAds', {
-      elementIds: ['123', '456']
+      elementIds: ['123', '456'],
     });
     assert.includeMembers(emittedIds, ids);
   });
@@ -48,20 +47,20 @@ describe('EventEmitter', () => {
     const emitter = new EventEmitter();
     const ids = ['123', '456'];
     let count = 0;
-    
+
     const listener = (event: {elementIds: string[]}) => {
       count++;
     };
 
     emitter.addEventListener('requestAds', listener);
     emitter.emitEvent('requestAds', {
-      elementIds: ['123', '456']
+      elementIds: ['123', '456'],
     });
     assert.equal(count, 1);
 
     emitter.removeEventListener('requestAds', listener);
     emitter.emitEvent('requestAds', {
-      elementIds: ['123', '456']
+      elementIds: ['123', '456'],
     });
     assert.equal(count, 1);
   });
@@ -70,7 +69,7 @@ describe('EventEmitter', () => {
     const emitter = new EventEmitter();
     const ids = ['123', '456'];
     let count = 0;
-    
+
     const goodListener = (event: {elementIds: string[]}) => {
       count++;
     };
@@ -82,7 +81,7 @@ describe('EventEmitter', () => {
     emitter.addEventListener('requestAds', goodListener);
     emitter.addEventListener('requestAds', badListener);
     emitter.emitEvent('requestAds', {
-      elementIds: ['123', '456']
+      elementIds: ['123', '456'],
     });
     assert.equal(count, 1);
   });
@@ -103,9 +102,9 @@ describe('EventEmitter', () => {
 
     emitter.addEventListener('requestAds', badListener);
     emitter.addEventListener('eventListenerError', errorListener);
-    
+
     emitter.emitEvent('requestAds', {
-      elementIds: ['123', '456']
+      elementIds: ['123', '456'],
     });
 
     assert.isTrue(caught);
@@ -127,11 +126,11 @@ describe('EventEmitter', () => {
 
     emitter.addEventListener('requestAds', badListener);
     emitter.addEventListener('eventListenerError', errorListener);
-    
+
     emitter.emitEvent('requestAds', {
-      elementIds: ['123', '456']
+      elementIds: ['123', '456'],
     });
-    
+
     assert.equal(count, 1);
   });
 
