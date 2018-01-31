@@ -138,6 +138,7 @@ export default class Manager extends EventEmitter<SortableAds.EventMap> {
           name: 'googletag',
           type: 'GPT',
         });
+        this.requestAds([]);
       } else {
         this.emitEvent('warning', {
           message: 'should only registerGPT once',

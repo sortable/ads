@@ -196,6 +196,18 @@ describe('Manager', () => {
       assert.isFalse(gpt2.initialized);
       assert.isTrue(warned);
     });
+
+    it('should send existing requests if requestAds was called before registerGPT', async () => {
+      const manager = new Manager();
+      manager.requestAds(['before-register']);
+      const gpt = new TestGPTConfig();
+      manager.registerGPT(gpt.config);
+      await sleep(THROTTLE_MS);
+
+      assert.isTrue(gpt.initialized);
+      assert.isTrue(gpt.defined);
+      assert.isTrue(gpt.requested);
+    });
   });
 
   describe('registerHB', () => {
