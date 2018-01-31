@@ -1,26 +1,140 @@
 import { assert } from 'chai';
 import EventEmitter from './event-emitter';
 
-describe('test EventEmitter class', () => {
+describe('EventEmitter', () => {
 
-  it('should be able to listen events', async () => {
-    // TODO
+  it('should not fail emitting event when no listeners are registered', async () => {
+    const emitter = new EventEmitter();
+    const ids = ['123', '456'];
+
+    try {
+      emitter.emitEvent('requestAds', {
+        elementIds: ['123', '456'],
+      });
+    } catch (e) {
+      assert.fail();
+    }
+  });
+
+  it('should not fail on removing listeners that were not registered', async () => {
+    const emitter = new EventEmitter();
+    const ids = ['123', '456'];
+
+    const listener = (event: {elementIds: string[]}) => undefined;
+
+    try {
+      emitter.removeEventListener('requestAds', listener);
+    } catch (e) {
+      assert.fail();
+    }
+  });
+
+  it('should be able to listen on events', async () => {
+    const emitter = new EventEmitter();
+    const ids = ['123', '456'];
+    let emittedIds: string[] = [];
+
+    emitter.addEventListener('requestAds', event => {
+      emittedIds = event.elementIds;
+    });
+    emitter.emitEvent('requestAds', {
+      elementIds: ['123', '456'],
+    });
+    assert.includeMembers(emittedIds, ids);
   });
 
   it('should be able to remove listener', async () => {
-    // TODO
+    const emitter = new EventEmitter();
+    const ids = ['123', '456'];
+    let count = 0;
+
+    const listener = (event: {elementIds: string[]}) => {
+      count++;
+    };
+
+    emitter.addEventListener('requestAds', listener);
+    emitter.emitEvent('requestAds', {
+      elementIds: ['123', '456'],
+    });
+    assert.equal(count, 1);
+
+    emitter.removeEventListener('requestAds', listener);
+    emitter.emitEvent('requestAds', {
+      elementIds: ['123', '456'],
+    });
+    assert.equal(count, 1);
   });
 
   it('should not impact other listeners if there is an exception within one listener', async () => {
-    // TODO
+    const emitter = new EventEmitter();
+    const ids = ['123', '456'];
+    let count = 0;
+
+    const goodListener = (event: {elementIds: string[]}) => {
+      count++;
+    };
+
+    const badListener = (event: {elementIds: string[]}) => {
+      throw Error('I am so bad.');
+    };
+
+    emitter.addEventListener('requestAds', goodListener);
+    emitter.addEventListener('requestAds', badListener);
+    emitter.addEventListener('requestAds', goodListener);
+    emitter.emitEvent('requestAds', {
+      elementIds: ['123', '456'],
+    });
+    assert.equal(count, 2);
   });
 
   it('should trigger "eventListenerError" event if there is an exception within listener', async () => {
-    // TODO
+    const emitter = new EventEmitter();
+    const ids = ['123', '456'];
+    let caught = false;
+    let eventType = '';
+
+    const badListener = (event: {elementIds: string[]}) => {
+      throw Error('I am so bad.');
+    };
+
+    const errorListener = (event: {error: any, listener: (event: any) => void, type: string}) => {
+      caught = true;
+      eventType = event.type;
+    };
+
+    emitter.addEventListener('requestAds', badListener);
+    emitter.addEventListener('eventListenerError', errorListener);
+
+    emitter.emitEvent('requestAds', {
+      elementIds: ['123', '456'],
+    });
+
+    assert.isTrue(caught);
+    assert.equal(eventType, 'requestAds');
   });
 
   it('should not trigger another event if there is an exception within "eventListenerError" listener', async () => {
-    // TODO
+    const emitter = new EventEmitter();
+    const ids = ['123', '456'];
+    let count = 0;
+
+    const badListener = (event: {elementIds: string[]}) => {
+      throw Error('I am so bad.');
+    };
+
+    const errorListener = (event: {error: any, listener: (event: any) => void, type: string}) => {
+      count++;
+      throw Error('BRAAAAAAAM');
+    };
+
+    emitter.addEventListener('requestAds', badListener);
+    emitter.addEventListener('eventListenerError', errorListener);
+
+    emitter.emitEvent('requestAds', {
+      elementIds: ['123', '456'],
+    });
+
+    assert.equal(count, 1);
   });
 
 });

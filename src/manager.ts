@@ -138,6 +138,7 @@ export default class Manager extends EventEmitter<SortableAds.EventMap> {
           name: 'googletag',
           type: 'GPT',
         });
+        this.requestAds([]);
       } else {
         this.emitEvent('warning', {
           message: 'should only registerGPT once',
@@ -213,6 +214,10 @@ export default class Manager extends EventEmitter<SortableAds.EventMap> {
   private sendRequest(gpt: GPTService): void {
     const ids = Object.keys(this.requestQueue);
 
+    if (ids.length === 0) {
+      return;
+    }
+
     // reset queue
     this.throttleTimer = null;
     this.requestQueue = {};
@@ -234,6 +239,10 @@ export default class Manager extends EventEmitter<SortableAds.EventMap> {
       gpt.waitReady(() => {
         // We need to filter out the destroyed ids during this period
         const activeIds = ids.filter(id => this.requestedAds[id]);
+
+        if (activeIds.length === 0) {
+          return;
+        }
 
         const context = gpt.define(activeIds);
 
@@ -272,6 +281,11 @@ export default class Manager extends EventEmitter<SortableAds.EventMap> {
 
         // We need to filter out the destroyed ids during this period
         const activeIds = ids.filter(id => this.requestedAds[id]);
+
+        if (activeIds.length === 0) {
+          done();
+          return;
+        }
 
         const context = hb.define(activeIds);
         const hbContext: SortableAds.HBContext<any> = { ...context, done, timeout, beforeRequestGPT: null };
