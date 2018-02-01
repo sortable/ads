@@ -4,7 +4,9 @@ import Service from './service';
 type HBService = Service<any>;
 type GPTService = Service<SortableAds.GoogletagSlot>;
 
-// list of events we want to see during debugging
+/**
+ * List of events we want to see during debugging.
+ */
 const debugEvents: SortableAds.EventKey[] = [
   'eventListenerError',
   'error',
@@ -17,6 +19,11 @@ const debugEvents: SortableAds.EventKey[] = [
   'noUnitDefined',
 ];
 
+/**
+ * Manager is the class which implements the public Ads Manager API.
+ * It manages the state and workflow of configuring, creating, requesting,
+ * and destroying ad units.
+ */
 export default class Manager extends EventEmitter<SortableAds.EventMap> {
   private bidderTimeout: number;
   private throttleTimeout: number;
@@ -47,10 +54,17 @@ export default class Manager extends EventEmitter<SortableAds.EventMap> {
     this.debugListeners = [];
   }
 
+  /**
+   * Get the debug flag.
+   */
   public getDebug(): boolean {
     return this.debug;
   }
 
+  /**
+   * Set the debug flag. If debugging is enabled, listeners are registered
+   * on certain lifecycle events to log the details.
+   */
   public setDebug(value: boolean) {
     if (value === this.debug) {
       return;
@@ -83,10 +97,20 @@ export default class Manager extends EventEmitter<SortableAds.EventMap> {
     }
   }
 
+  /**
+   * Get the bidder timeout in ms.
+   */
   public getBidderTimeout() {
     return this.bidderTimeout;
   }
 
+  /**
+   * Set the bidder timeout in ms. It is how long the API waits for
+   * header bidders to make their requests before sending the results
+   * as targeting to GPT/DFP.
+   *
+   * @param timeout The bidder timeout in ms.
+   */
   public setBidderTimeout(timeout: number) {
     this.bidderTimeout = timeout;
   }
@@ -97,13 +121,15 @@ export default class Manager extends EventEmitter<SortableAds.EventMap> {
    * Usage:
    *   1. refresh all ads: `requestAds(getRequestedElementIds())`
    *   2. destroy all ads: `destroyAds(getRequestedElementIds())`
+   *
+   * @returns The list of element ids as strings.
    */
   public getRequestedElementIds(): string[] {
     return Object.keys(this.requestedAds);
   }
 
-  /*
-   * Commnad to destroy given ads.
+  /**
+   * Command to destroy given ads.
    */
   public destroyAds(elementIds: string[]): void {
     this.tryCatch('destroyAds', () => {
@@ -119,6 +145,9 @@ export default class Manager extends EventEmitter<SortableAds.EventMap> {
     });
   }
 
+  /**
+   * Proxies to [[Service.loadNewPage]].
+   */
   public loadNewPage(): void {
     this.tryCatch('loadNewPage', () => {
       this.emitEvent('loadNewPage', {});
@@ -129,6 +158,12 @@ export default class Manager extends EventEmitter<SortableAds.EventMap> {
     });
   }
 
+  /**
+   * Creates a [[Service]] with configuration for GPT, and resumes any queued
+   * ad requests. This method should only be called once.
+   *
+   * @param config A config object for which defineUnits returns a googletag.Slot.
+   */
   public registerGPT(config: SortableAds.GPTConfig<SortableAds.GoogletagSlot>) {
     this.tryCatch('registerGPT', () => {
       this.emitEvent('registerGPT', { config });
@@ -165,6 +200,12 @@ export default class Manager extends EventEmitter<SortableAds.EventMap> {
     });
   }
 
+  /**
+   * Analagous to registerGPT, but for header bidders.
+   *
+   * @param config A config object which should return an object which implements
+   * an ad unit as specified by the HB Service.
+   */
   public registerHB(config: SortableAds.HBConfig<any>) {
     this.tryCatch('registerHB', () => {
       this.emitEvent('registerHB', { config });
@@ -177,7 +218,11 @@ export default class Manager extends EventEmitter<SortableAds.EventMap> {
   }
 
   /**
-   * Catch all API error and emit error event.
+   * Convenience function used to emit events when
+   * exceptions are thrown from public API calls.
+   *
+   * @param name The name of the method to include in the error message.
+   * @param fn The method to run/wrap.
    */
   public tryCatch(name: string, fn: () => void): void {
     try {
@@ -190,6 +235,13 @@ export default class Manager extends EventEmitter<SortableAds.EventMap> {
     }
   }
 
+  /**
+   * Used to request ads for DOM elements by id. This method is throttled,
+   * so that individual requests can be aggregated before beginning the process
+   * of requesting ads. Ad requests will be queued until GPT is initialized.
+   *
+   * @param elementIds The ids for the elements that requested ads should fill
+   */
   public requestAds(elementIds: string[]): void {
     this.tryCatch('requestAds', () => {
       this.emitEvent('requestAds', { elementIds });
@@ -223,10 +275,14 @@ export default class Manager extends EventEmitter<SortableAds.EventMap> {
    *   3. HB's requestHB
    *   4. HB's context.beforeRequestGPT
    *   5. GPT's requestGPT
+   *
+   * @param gpt The GPT Service. It needs to exist before we can attempt to send
+   * ad requests.
    */
   private sendRequest(gpt: GPTService): void {
     const ids = Object.keys(this.requestQueue);
 
+    // exit early if we have no ids to request
     if (ids.length === 0) {
       return;
     }
@@ -286,6 +342,7 @@ export default class Manager extends EventEmitter<SortableAds.EventMap> {
         // We need to filter out the destroyed ids during this period
         const activeIds = ids.filter(id => this.requestedAds[id]);
 
+        // exit early if all ids were destroyed
         if (activeIds.length === 0) {
           done();
           return;
