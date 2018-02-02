@@ -83,9 +83,9 @@ function registerSortable() {
     },
     requestHB(context) {
       context.beforeRequestGPT = function () {
-        deployads.setTargetingForGPTAsync(context.ids);
+        deployads.updateTargetingForGPT(context.ids);
       };
-      deployads.requestBids({
+      deployads.requestBidsForGPT({
         adUnits: context.units,
         timeout: context.timeout,
         bidsReadyHandler() {
