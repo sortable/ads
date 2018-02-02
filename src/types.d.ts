@@ -176,8 +176,6 @@ declare namespace DeployAds {
   interface AdUnit {
     elementId: string;
     sizes: AdSize | AdSize[];
-    targeting?: { [index: string]: string | string[] };
-    adUnitPath?: string;
   }
 
   interface RequestBidsParams {
@@ -200,7 +198,7 @@ declare namespace DeployAds {
     /**
      * Request bids for the provided AdUnit
      */
-    requestBids(params: RequestBidsParams): void;
+    requestBidsForGPT(params: RequestBidsParams): void;
 
     /**
      * Set the GPT slot targeting for the received bids
