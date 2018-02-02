@@ -139,6 +139,24 @@ export default class Manager extends EventEmitter<SortableAds.EventMap> {
           type: 'GPT',
         });
         this.requestAds([]);
+
+        // `googletag.disableInitialLoad()` is required to be called
+        const win: any = window;
+        if (typeof win !== 'undefined') {
+          this.GPTService.waitReady(() => {
+            setTimeout(() => {
+              if (win.googletag && win.googletag.pubadsReady && win.google_DisableInitialLoad !== true) {
+                const warning = 'Detect that `googletag.disableInitialLoad()` is not called';
+                this.emitEvent('warning', {
+                  message: warning,
+                });
+                if (console && console.warn) {
+                  console.warn(warning);
+                }
+              }
+            }, 5000);
+          });
+        }
       } else {
         this.emitEvent('warning', {
           message: 'should only registerGPT once',
