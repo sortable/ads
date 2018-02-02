@@ -141,11 +141,11 @@ export default class Manager extends EventEmitter<SortableAds.EventMap> {
         this.requestAds([]);
 
         // `googletag.disableInitialLoad()` is required to be called
-        const win: any = window;
-        if (typeof win !== 'undefined') {
+        if (typeof window !== 'undefined') {
           this.GPTService.waitReady(() => {
             setTimeout(() => {
-              if (win.googletag && win.googletag.pubadsReady && win.google_DisableInitialLoad === false) {
+              // @ts-ignore
+              if (window.googletag && window.googletag.pubadsReady && window.google_DisableInitialLoad === false) {
                 const warning = 'Detect that `googletag.disableInitialLoad()` is not called';
                 this.emitEvent('warning', {
                   message: warning,
