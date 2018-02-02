@@ -180,7 +180,7 @@ export default class Manager extends EventEmitter<SortableAds.EventMap> {
         this.requestedAds[elementId] = true;
       });
 
-      // wait unitl GPT is registered
+      // wait until GPT is registered
       if (this.GPTService === null ||
           this.throttleTimer !== null ||
           Object.keys(this.requestQueue).length === 0) {
@@ -191,23 +191,18 @@ export default class Manager extends EventEmitter<SortableAds.EventMap> {
       const gpt = this.GPTService;
 
       this.throttleTimer = setTimeout(() => {
-        try {
+        gpt.waitReady(() => {
           this.sendRequest(gpt);
-        } catch (error) {
-          this.emitEvent('error', {
-            error,
-            message: 'exception when send request',
-          });
-        }
+        });
       }, this.throttleTimeout);
     });
   }
 
   /**
    * When sending request, config functions would be called in following order:
-   *   1. HB's defineUnit
-   *   2. HB's requestHB
-   *   3. GPT's defineUnit
+   *   1. GPT's defineUnit
+   *   2. HB's defineUnit
+   *   3. HB's requestHB
    *   4. HB's context.beforeRequestGPT
    *   5. GPT's requestGPT
    */
@@ -228,6 +223,8 @@ export default class Manager extends EventEmitter<SortableAds.EventMap> {
 
     const HBServiceAndContexts: Array<[HBService, SortableAds.HBContext<any>]> = [];
 
+    const gptContext = gpt.define(ids);
+
     let calledBidsReady = false;
 
     const bidsReady = () => {
@@ -236,22 +233,11 @@ export default class Manager extends EventEmitter<SortableAds.EventMap> {
       }
       calledBidsReady = true;
 
-      gpt.waitReady(() => {
-        // We need to filter out the destroyed ids during this period
-        const activeIds = ids.filter(id => this.requestedAds[id]);
-
-        if (activeIds.length === 0) {
-          return;
-        }
-
-        const context = gpt.define(activeIds);
-
-        HBServiceAndContexts.forEach(([hb, hbContext]) => {
-          hb.executeBeforeRequestGPT(hbContext);
-        });
-
-        gpt.requestGPT(context);
+      HBServiceAndContexts.forEach(([hb, hbContext]) => {
+        hb.executeBeforeRequestGPT(hbContext);
       });
+
+      gpt.requestGPT(gptContext);
     };
 
     this.HBServices.forEach((hb, bidderId) => {
