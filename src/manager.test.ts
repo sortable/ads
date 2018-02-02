@@ -262,7 +262,7 @@ describe('Manager', () => {
       assert.isFalse(hb.requested);
 
       assert.isTrue(gpt.initialized);
-      assert.isFalse(gpt.defined);
+      assert.isTrue(gpt.defined);
       assert.isFalse(gpt.requested);
 
       await sleep(manager.getBidderTimeout() + 100);

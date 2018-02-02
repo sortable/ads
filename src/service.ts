@@ -27,10 +27,20 @@ export default class Service<T> {
   }
 
   public waitReady(cb: SortableAds.CallbackFunction) {
+    const wrapped = () => {
+      try {
+        cb();
+      } catch (error) {
+        this.emitter.emitEvent('error', {
+          error,
+          message: `exception with waitReady for ${this.config.type} (${this.config.name})`,
+        });
+      }
+    };
     if (this.ready) {
-      cb();
+      wrapped();
     } else {
-      this.queue.push(cb);
+      this.queue.push(wrapped);
     }
   }
 
