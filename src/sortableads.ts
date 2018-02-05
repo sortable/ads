@@ -1,9 +1,5 @@
 import Manager from './manager';
 
- /**
-  * Convenience function to get the global object across Web,
-  * ServiceWorker, or Node.js.
-  */
 const getGlobal = () => {
   if (typeof self !== 'undefined') {
     return self;
@@ -21,15 +17,6 @@ const getGlobal = () => {
 
 const GLOBAL: any = getGlobal();
 
-/**
- * This file is the entrypoint, and augments the global namespace
- * by initializing sortableads as the library entrypoint, and defining
- * the public API. The library will queue calls and execute them when it
- * is initialized.
- *
- * As an NPM module, you can use Ads Manager by calling `import @sortable/ads`
- * to include this file.
- */
 const api: SortableAds.API = GLOBAL.sortableads = GLOBAL.sortableads || [];
 
 if (!api.apiReady) {
