@@ -53,7 +53,7 @@ sortableads.push(() => {
       window.pbjs.requestBids({
         adUnits: context.units,
         timeout: context.timeout,
-        bidsReadyHandler() {
+        bidsBackHandler() {
           context.done();
         }
       });

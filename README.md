@@ -19,7 +19,7 @@ In short, this library will handle the administrative work of managing the life 
 
 We have also provided an example of using the Ad Manager API in a React component [here](https://github.com/sortable/react).
 
-### Build
+### Build (For contributors)
 
 To build, you must have NodeJS and NPM installed on your environment.
 
@@ -35,29 +35,46 @@ Afterwards, the available commands to run are:
 Examples will be hosted at localhost:9000/examples/*
 HTML documentation will be hosted at localhost:9000/docs/
 
-### Usage
+### Usage (For consumers)
 
-#### NPM
+To consume this package as an [NPM](https://www.npmjs.com/package/@sortable/ads) module:
 
-To consume this package as an NPM module, include the following line:
+`npm install @sortable/ads --save`
 
-ES6: `import @sortable/ads;`
+Then, using a module loader that supports either CommonJS or ES2015 modules, such as [webpack](https://webpack.js.org/):
 
-CommonJS: `require('@sortable/ads');`
+```javascript
+// Using ES6 transpiler
+import '@sortable/ads';
 
-Unlike many NPM modules that expose functionality, this module simply instantiates a global variable **sortableads** and populates it with the public API calls.
+// Not using ES6 transpiler
+require('@sortable/ads');
 
-#### Include script
+// use the API via global variable
+sortableads.[method]
+...
+```
 
-You can also consume the library by including the Javascript bundle as provided by NPM's CDN:
+Note that unlike most NPM modules that expose functionality, this module simply instantiates a global variable **sortableads** and populates it with the public API calls.
+
+You can also consume the library by including the JavaScript bundle as provided by NPM's CDN:
 
 `<script src="https://cdn.jsdelivr.net/npm/@sortable/ads@x.x.x/dist/sortableads.min.js" async/>`
 
 where x.x.x can be changed to whichever version of the API you wish to use.
 
-In this case, you should include the following script so that the global variable sortableads is defined before you use it:
+Note that if you are loading the script asynchronously, you should include the following script and define sortableads before you use it:
 
 `<script> var sortableads = sortableads || [];  </script>`
+
+In the asynchronous use case, wrap all API calls in a callback, and add it to the sortableads queue:
+
+```javascript
+sortableads.push(() => {
+  sortableads.[method]
+  ...
+});
+```
 
 ## API Documentation
 
@@ -131,7 +148,7 @@ requestHB(context) {
     // context.units is created from defineUnit above
     adUnits: context.units,
     timeout: context.timeout,
-    bidsReadyHandler() {
+    bidsBackHandler() {
       // call context.done() when request finished
       context.done();
     }
