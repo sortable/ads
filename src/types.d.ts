@@ -181,7 +181,7 @@ declare namespace DeployAds {
   interface RequestBidsParams {
     adUnits: AdUnit[];
     timeout: number;
-    bidsReadyHanlder: () => void;
+    bidsReadyHandler: () => void;
   }
 
   interface API {
