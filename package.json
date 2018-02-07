@@ -4,6 +4,10 @@
   "description": "",
   "main": "dist/sortableads.js",
   "types": "src/types.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sortable/ads.git"
+  },
   "scripts": {
     "test": "npm run build && nyc mocha -r ts-node/register src/**/*.test.ts",
     "clean": "rm -rf dist",
@@ -23,7 +27,7 @@
     ]
   },
   "author": "sortable",
-  "license": "",
+  "license": "MIT",
   "devDependencies": {
     "@types/chai": "^4.0.6",
     "@types/mocha": "^2.2.44",
