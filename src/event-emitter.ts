@@ -5,13 +5,7 @@
  * new event types. This is mostly useful for debugging in Manager.
  */
 export default class EventEmitter<T extends SortableAds.EventMap> {
-  private map: {
-    [P in keyof T]?: Array<(event: T[P]) => void>
-  };
-
-  constructor() {
-    this.map = {};
-  }
+  private map: { [P in keyof T]?: Array<(event: T[P]) => void> } = {};
 
   /**
    * Register a listener that allows you to set up and call a Javascript function when

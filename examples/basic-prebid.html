@@ -1,136 +1,44 @@
 <html>
 <head>
-<script type="text/javascript" src="//www.googletagservices.com/tag/js/gpt.js" async></script>
-<script type="text/javascript" src="//acdn.adnxs.com/prebid/not-for-prod/prebid.js" async></script>
-<script type="text/javascript" src="//tag-cdn.deployads.com/example/example.com.js" async></script>
-
+<script type="text/javascript" src="https://www.googletagservices.com/tag/js/gpt.js" async></script>
+<script type="text/javascript" src="https://acdn.adnxs.com/prebid/not-for-prod/prebid.js" async></script>
+<script type="text/javascript" src="../dist/sortableads.js" async></script>
 <script>
-  var srtAdsManager = (function () { /** embeded Ad Manager library */ }());
-</script>
+var sortableads = sortableads || [];
 
-<script>
-// setting script
+sortableads.push(function () {
+  sortableads.set('bidderTimeout', 1000);
 
-srtAdsManager.setBidderTimeout(1000);
-
-function registerPrebid() {
-  srtAdsManager.registerHB({
-    name: 'prebid',
-    init(cb) {
-      window.pbjs = window.pbjs || {};
-      pbjs.que = pbjs.que || [];
-      pbjs.que.push(cb)
+  sortableads.defineAds([{
+    elementId: 'div-gpt-ad-1460505748561-0',
+    sizes: [[300, 250], [300, 600]],
+    GPT: {
+      adUnitPath: '/19968336/header-bid-tag-0'
     },
-    defineUnit(divId) {
-      if (divId === 'div-gpt-ad-1460505748561-0') {
-        return {
-          code: divId,
-          sizes: [[300, 250], [300, 600]],
-            bids: [{
-            bidder: 'appnexus',
-            params: {
-              placementId: '10433394'
-            }
-          }]
-        }
-      } else if (divId === 'div-gpt-ad-1460505661639-0') {
-        return {
-          code: 'div-gpt-ad-1460505661639-0',
-          sizes: [[728, 90], [970, 90]],
-          bids: [{
-            bidder: 'appnexus',
-            params: {
-              placementId: '10433394'
-            }
-          }]
-        }
-      }
-    },
-    requestHB(context) {
-      context.beforeRequestGPT = function () {
-        pbjs.setTargetingForGPTAsync(context.ids);
-      };
-      pbjs.requestBids({
-        adUnits: context.units,
-        timeout: context.timeout,
-        bidsReadyHandler() {
-          context.done();
-        }
-      });
+    prebid: {
+      bids: [{
+        bidder: 'appnexus',
+        params: { placementId: '10433394' }
+      }]
     }
-  });
-}
-
-function registerSortable() {
-  srtAdsManager.registerHB({
-    name: 'sortable',
-    init(cb) {
-      window.deployads = window.deployads || [];
-      deployads.push(cb);
+  }, {
+    elementId: 'div-gpt-ad-1460505661639-0',
+    sizes: [[728, 90], [970, 90]],
+    GPT: {
+      adUnitPath: '/19968336/header-bid-tag-1'
     },
-    defineAd(divId) {
-      if (divId === 'div-gpt-ad-1460505748561-0') {
-        return {
-          code: divId,
-          sizes: [[300, 250], [300, 600]]
-        }
-      } else if (divId === 'div-gpt-ad-1460505661639-0') {
-        return {
-          code: 'div-gpt-ad-1460505661639-0',
-          sizes: [[728, 90], [970, 90]]
-        }
-      }
-    },
-    requestHB(context) {
-      context.beforeRequestGPT = function () {
-        deployads.updateTargetingForGPT(context.ids);
-      };
-      deployads.requestBidsForGPT({
-        adUnits: context.units,
-        timeout: context.timeout,
-        bidsReadyHandler() {
-          context.done();
-        }
-      });
+    prebid: {
+      bids: [{
+        bidder: 'appnexus',
+        params: { placementId: '10433394' }
+      }]
     }
-  });
-}
+  }]);
 
-function registerGPT() {
-  srtAdsManager.registerGPT({
-    init(cb) {
-      window.googletag = window.googletag || {};
-      googletag.cmd = googletag.cmd || [];
-      googeltag.cmd.push(function () {
-        googletag.pubads().disableInitialLoad();
-        googletag.pubads().enableSingleRequest();
-        googletag.enableServices();
-      });
-    },
-    defineUnit(divId) {
-      if (divId === 'div-gpt-ad-1460505748561-0') {
-        return googletag.defineSlot('/19968336/header-bid-tag-0', [[300, 250], [300, 600]], divId).addService(googletag.pubads());
-      } else if (divId === 'div-gpt-ad-1460505661639-0') {
-        return googletag.defineSlot('/19968336/header-bid-tag1', [[728, 90], [970, 90]], divId).addService(googletag.pubads());
-      }
-    },
-    requestGPT(context) {
-      context.newIds.forEach(function (newIds) {
-        googletag.display(newIds);
-      });
-      googletag.pubads().refresh(context.units);
-    }
-  });
-}
-
-// ab test prebid and sortable
-if (Math.random() > 0.5) {
-  registerPrebid();
-} else {
-  registerSortable();
-}
-registerGPT();
-
+  sortableads.usePrebidForGPTAsync();
+  sortableads.useGPTAsync();
+  sortableads.start();
+});
 </script>
 </head>
 
@@ -139,14 +47,18 @@ registerGPT();
 <h5>Div-1</h5>
 <div id='div-gpt-ad-1460505748561-0'>
   <script type='text/javascript'>
-    srtAdsManager.requestAds('div-gpt-ad-1460505748561-0');
+    sortableads.push(function () {
+      sortableads.requestAds(['div-gpt-ad-1460505748561-0']);
+    });
   </script>
 </div>
 
 <h5>Div-2</h5>
 <div id='div-gpt-ad-1460505661639-0'>
   <script type='text/javascript'>
-    srtAdsManager.requestAds(['div-gpt-ad-1460505661639-0']);
+    sortableads.push(function () {
+      sortableads.requestAds(['div-gpt-ad-1460505661639-0']);
+    });
   </script>
 </div>
 

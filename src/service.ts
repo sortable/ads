@@ -1,48 +1,50 @@
 import EventEmitter from './event-emitter';
+import { once } from './util';
 
 /**
- * A Service is created when the user registers a HB or GPT,
+ * A Service is created when the user load a HB or AdServer plugin,
  * and its main purpose is to generate the context for requests,
  * and to emit events when it proxies to function calls in
- * corresponding the Config object.
+ * corresponding the plugin object.
  *
  * As Services are generated in the usage of the Manager API,
  * they should not be manually instantiated.
  */
 
 export default class Service<T> {
-  private emitter: EventEmitter<SortableAds.EventMap>;
-  private config: SortableAds.GeneralServiceConfig<T>;
-  private units: { [index: string]: T };
-  private ready: boolean;
-  private queue: SortableAds.CallbackFunction[];
+  protected emitter: EventEmitter<SortableAds.EventMap>;
+  protected plugin: SortableAds.GeneralPlugin<T>;
+
+  private ready: boolean = false;
+  private queue: SortableAds.CallbackFunction[] = [];
+
+  // T => the unit is defined unit for this element id
+  // null | undefined => the unit is specified as missed / unused
+  private units: { [elementId: string]: T | null | undefined } = {};
 
   /**
-   * Calls Config.init and provides it with a callback to run all scheduled
+   * Calls plugin.init and provides it with a callback to run all scheduled
    * callbacks added from [[Service.waitReady]] once the service has successfully
    * initialized.
    *
    * @param emitter The instance of Manager that manages the Service.
-   * @param config The user-defined Config that the Service will
+   * @param plugin The user-defined plugin that the Service will
    * proxy to.
    */
   constructor(
     emitter: EventEmitter<SortableAds.EventMap>,
-    config: SortableAds.GeneralServiceConfig<T>,
+    plugin: SortableAds.GeneralPlugin<T>,
   ) {
     this.emitter = emitter;
-    this.config = config;
-    this.units = {};
-    this.ready = false;
-    this.queue = [];
+    this.plugin = plugin;
 
-    this.config.init(() => {
+    this.plugin.initAsync(once(() => {
       this.ready = true;
-      this.queue.forEach(cb => {
+      for (const cb of this.queue) {
         cb();
-      });
+      }
       this.queue = [];
-    });
+    }));
   }
 
   /**
@@ -53,16 +55,7 @@ export default class Service<T> {
    * @param cb A Javascript function.
    */
   public waitReady(cb: SortableAds.CallbackFunction) {
-    const wrapped = () => {
-      try {
-        cb();
-      } catch (error) {
-        this.emitter.emitEvent('error', {
-          error,
-          message: `exception with waitReady for ${this.config.type} (${this.config.name})`,
-        });
-      }
-    };
+    const wrapped = () => this.tryCatch('waitReady', cb);
     if (this.ready) {
       wrapped();
     } else {
@@ -70,121 +63,112 @@ export default class Service<T> {
     }
   }
 
-  /**
-   * Keep track of new divs to create ad units for (as specified in
-   * the Config), and old divs to refresh.
-   *
-   * @param elementIds List of divIds to define ad units for.
-   * @returns The context identifying the ad units to be requested
-   * or refreshed.
-   */
-  public define(elementIds: string[]): SortableAds.Context<T> {
-    const newIds: string[] = [];
-    const newUnits: T[] = [];
-    const refreshIds: string[] = [];
-    const refreshUnits: T[] = [];
-    elementIds.forEach(elementId => {
-      if (this.units.hasOwnProperty(elementId)) {
-        refreshIds.push(elementId);
-        refreshUnits.push(this.units[elementId]);
-      } else {
+  public getUnits(adConfigs: SortableAds.AdConfig[]): T[] {
+    if (!this.ready) {
+      return [];
+    }
+    const units: T[] = [];
+    for (const adConfig of adConfigs) {
+      const elementId = adConfig.elementId;
+      if (!this.units.hasOwnProperty(elementId)) {
         this.tryCatch('defineUnit', () => {
-          const slot = this.config.defineUnit(elementId);
-          if (slot == null) {
+          const unit = this.plugin.defineUnit(adConfig);
+          this.units[elementId] = unit;
+          if (unit == null) {
             this.emitter.emitEvent('noUnitDefined', {
-              elementId,
-              name: this.config.name,
-              type: this.config.type,
+              adConfig,
+              plugin: this.plugin,
             });
-          } else {
-            this.units[elementId] = slot;
-            newIds.push(elementId);
-            newUnits.push(slot);
           }
         });
       }
-    });
-    return {
-      ids: newIds.concat(refreshIds),
-      newIds,
-      newUnits,
-      refreshIds,
-      refreshUnits,
-      units: newUnits.concat(refreshUnits),
-    };
+      const u = this.units[elementId];
+      if (u != null) {
+        units.push(u);
+      }
+    }
+    return units;
   }
 
   /**
-   * Proxies to Config.requestHB.
+   * Proxies to plugin.requestHB.
    */
-  public requestHB(context: SortableAds.HBContext<T>) {
-    this.tryCatch('requestHB', () => {
-      if (this.config.type === 'HB') {
-        this.config.requestHB(context);
+  public requestBids(units: T[], timeout: number, done: SortableAds.CallbackFunction) {
+    if (!this.ready) {
+      return;
+    }
+    this.tryCatch('requestBids', () => {
+      if (this.plugin.type === 'headerBidding') {
+        this.plugin.requestBids(units, timeout, done);
       }
     });
   }
 
   /**
    * This method is called once all HBs have finished making requests, and before
-   * making a request to GPT. Context.beforeRequestGPT must be set as a callback
-   * on the context in HBConfig.requestHB before making the request. Usually, this
-   * is where you set targeting for your ad slots.
-   *
-   * @param context
+   * making a request to ad server.
    */
-  public executeBeforeRequestGPT(context: SortableAds.HBContext<T>) {
-    this.tryCatch('context.beforeRequestGPT', () => {
-      if (context.beforeRequestGPT !== null) {
-        context.beforeRequestGPT();
+  public beforeRequestAdServer(units: T[]) {
+    if (!this.ready) {
+      return;
+    }
+    this.tryCatch('beforeRequestAdServer', () => {
+      if (this.plugin.type === 'headerBidding') {
+        this.plugin.beforeRequestAdServer(units);
       }
     });
   }
 
   /**
-   * Proxies to Config.requestGPT.
+   * Proxies to plugin.requestGPT.
    */
-  public requestGPT(context: SortableAds.GPTContext<T>) {
-    this.tryCatch('requestGPT', () => {
-      if (this.config.type === 'GPT') {
-        this.config.requestGPT(context);
+  public requestAdServer(units: T[]) {
+    if (!this.ready) {
+      return;
+    }
+    this.tryCatch('requestAdServer', () => {
+      if (this.plugin.type === 'adServer') {
+        this.plugin.requestAdServer(units);
       }
     });
   }
 
   /**
-   * Proxies to Config.destroyUnits.
+   * Proxies to plugin.destroyUnits.
    *
-   * @param divIds List of divs to destroy their associated ad units.
+   * @param elementIds List of divs to destroy their associated ad units.
    */
-  public destroy(divIds: string[]) {
+  public destroy(elementIds: string[]) {
     if (!this.ready) {
       return;
     }
     const units: T[] = [];
-    divIds.forEach(divId => {
-      if (this.units.hasOwnProperty(divId)) {
-        units.push(this.units[divId]);
-        delete this.units[divId];
+    elementIds.forEach(elementId => {
+      if (this.units.hasOwnProperty(elementId)) {
+        const unit = this.units[elementId];
+        if (unit != null) {
+          units.push(unit);
+        }
+        delete this.units[elementId];
       }
     });
     this.tryCatch('destroyUnits', () => {
-      if (this.config.destroyUnits) {
-        this.config.destroyUnits(units);
+      if (this.plugin.destroyUnits) {
+        this.plugin.destroyUnits(units);
       }
     });
   }
 
   /**
-   * Proxies to Config.loadNewPage.
+   * Proxies to plugin.loadNewPage.
    */
   public loadNewPage() {
     if (!this.ready) {
       return;
     }
     this.tryCatch('loadNewPage', () => {
-      if (this.config.loadNewPage) {
-        this.config.loadNewPage();
+      if (this.plugin.loadNewPage) {
+        this.plugin.loadNewPage();
       }
     });
   }
@@ -192,7 +176,7 @@ export default class Service<T> {
   /**
    * Convenience function used to emit events when
    * exceptions are thrown from methods defined in
-   * the Config object.
+   * the plugin object.
    *
    * @param name The name of the method to include in the error message.
    * @param fn The method to run/wrap.
@@ -203,7 +187,7 @@ export default class Service<T> {
     } catch (error) {
       this.emitter.emitEvent('error', {
         error,
-        message: `${this.config.type} (${this.config.name}) has exception when call ${name}`,
+        message: `${this.plugin.type} (${this.plugin.name}) has exception when call "${name}"`,
       });
     }
   }
