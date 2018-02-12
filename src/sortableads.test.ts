@@ -4,20 +4,22 @@ import './sortableads';
 describe('sortableads', () => {
 
   it('should include all API methods', async () => {
-    assert.equal(typeof sortableads.getVersion, 'function');
-    assert.equal(typeof sortableads.getDebug, 'function');
-    assert.equal(typeof sortableads.setDebug, 'function');
-    assert.equal(typeof sortableads.getBidderTimeout, 'function');
-    assert.equal(typeof sortableads.setBidderTimeout, 'function');
-    assert.equal(typeof sortableads.getRequestedElementIds, 'function');
+    assert.equal(typeof sortableads.get, 'function');
+    assert.equal(typeof sortableads.set, 'function');
+    assert.equal(typeof sortableads.defineAds, 'function');
     assert.equal(typeof sortableads.requestAds, 'function');
+    assert.equal(typeof sortableads.getRequestedElementIds, 'function');
     assert.equal(typeof sortableads.destroyAds, 'function');
     assert.equal(typeof sortableads.loadNewPage, 'function');
-    assert.equal(typeof sortableads.registerGPT, 'function');
-    assert.equal(typeof sortableads.registerHB, 'function');
+    assert.equal(typeof sortableads.use, 'function');
+    assert.equal(typeof sortableads.useGPTAsync, 'function');
+    assert.equal(typeof sortableads.usePrebidForGPTAsync, 'function');
+    assert.equal(typeof sortableads.useSortableForGPTAsync, 'function');
+    assert.equal(typeof sortableads.start, 'function');
     assert.equal(typeof sortableads.addEventListener, 'function');
     assert.equal(typeof sortableads.removeEventListener, 'function');
     assert.equal(typeof sortableads.apiReady, 'boolean');
+    assert.equal(typeof sortableads.version, 'string');
     assert.equal(typeof sortableads.push, 'function');
   });
 
@@ -26,7 +28,7 @@ describe('sortableads', () => {
     if (typeof require !== 'undefined' && typeof __dirname !== 'undefined') {
       // @ts-ignore
       const version = JSON.parse(require('fs').readFileSync(__dirname + '/../package.json')).version;
-      assert.equal(sortableads.getVersion(), version);
+      assert.equal(sortableads.version, version);
     }
   });
 

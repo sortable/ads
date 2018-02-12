@@ -3,52 +3,87 @@ declare namespace SortableAds {
 
   type CallbackFunction = () => void;
 
-  interface Context<T> {
-    ids: string[];
-    newIds: string[];
-    newUnits: T[];
-    refreshIds: string[];
-    refreshUnits: T[];
-    units: T[];
+  type Size = [number, number];
+  type GPTSize = Size | 'fluid';
+  type GeneralSize<T> = T | T[];
+
+  interface AdConfig {
+    elementId: string;
+    sizes?: GeneralSize<Size>;
+
+    // for gpt-async plugin
+    GPT?: {
+      adUnitPath: string;
+      sizes?: GeneralSize<GPTSize>; // will use AdConfig.sizes if it's missed
+      sizeMapping?: Array<{ viewport: Size, sizes: GeneralSize<GPTSize> }>;
+      targeting?: { [key: string]: string | string[] };
+      attributes?: { [key: string]: string };
+      categoryExclusion?: string;
+      clickUrl?: string;
+      collapseEmptyDiv?: boolean;
+      collapseBeforeAdFetch?: boolean;
+      forceSafeFrame?: boolean;
+      safeFrameConfig?: {
+        allowOverlayExpansion?: boolean;
+        allowPushExpansion?: boolean;
+        sandbox?: boolean;
+      };
+    };
+
+    // for prebid-for-gpt-async plugin
+    prebid?: {
+      sizes?: GeneralSize<Size>; // will use AdConfig.sizes if it's missed
+      bids: Array<{
+        bidder: string,
+        params: any,
+        labelAny?: string[],
+        labelAll?: string[],
+      }>;
+      mediaTypes?: any;
+      labelAny?: string[];
+      labelAll?: string[];
+    };
+
+    // for sortable-for-gpt-async plugin
+    sortable?: {
+      sizes?: GeneralSize<Size>; // will use AdConfig.sizes if it's missed
+    };
+
+    // extend ad config for other customized plugin
+    // [name: string]: any;
   }
 
-  interface GPTContext<T> extends Context<T> {}
-
-  interface HBContext<T> extends Context<T> {
-    beforeRequestGPT: CallbackFunction | null;
-    timeout: number;
-    done: CallbackFunction;
-  }
-
-  interface Config<T> {
-    init: (cb: CallbackFunction) => void;
-    defineUnit: (elementId: string) => T | null | undefined;
+  interface BasicPlugin<T> {
+    name: string;
+    initAsync: (cb: CallbackFunction) => void;
+    defineUnit: (adUnit: AdConfig) => T | null | undefined;
     destroyUnits?: (units: T[]) => void;
     loadNewPage?: () => void;
   }
 
-  interface GPTConfig<T> extends Config<T> {
-    requestGPT: (context: GPTContext<T>) => void;
+  interface AdServerPlugin<T> extends BasicPlugin<T> {
+    type: 'adServer';
+    requestAdServer: (units: T[]) => void;
   }
 
-  interface HBConfig<T> extends Config<T> {
-    name: string;
-    requestHB: (context: HBContext<T>) => void;
+  interface HeaderBiddingPlugin<T> extends BasicPlugin<T> {
+    type: 'headerBidding';
+    requestBids: (units: T[], timeout: number, cb: CallbackFunction) => void;
+    beforeRequestAdServer: (units: T[]) => void;
   }
 
-  interface GPTServiceConfig<T> extends GPTConfig<T> {
-    name: string;
-    type: 'GPT';
+  type GeneralPlugin<T> = AdServerPlugin<T> | HeaderBiddingPlugin<T>;
+
+  interface Setting {
+    bidderTimeout: number;
+    throttleTimeout: number;
   }
 
-  interface HBServiceConfig<T> extends HBConfig<T> {
-    name: string;
-    type: 'HB';
+  interface UpdateEvent<T, K extends keyof T> {
+    name: K;
+    previousValue: T[K];
+    updatedValue: T[K];
   }
-
-  type GeneralServiceConfig<T> = GPTServiceConfig<T> | HBServiceConfig<T>;
-
-  type GoogletagSlot = any;
 
   interface EventMap {
     'eventListenerError': {
@@ -63,23 +98,31 @@ declare namespace SortableAds {
     'warning': {
       message: string,
     };
+    'updateSetting': UpdateEvent<Setting, keyof Setting>;
+    'defineAds': {
+      adConfigs: AdConfig[],
+    };
     'requestAds': {
-      elementIds: string[]
+      elementIds: string[],
     };
     'destroyAds': {
-      elementIds: string[]
+      elementIds: string[],
     };
     'loadNewPage': {},
-    'registerGPT': {
-      config: GPTConfig<GoogletagSlot>
+    'usePlugin': {
+      plugin: GeneralPlugin<any>,
     };
-    'registerHB': {
-      config: HBConfig<any>
-    };
+    'start': {},
     'noUnitDefined': {
+      adConfig: AdConfig,
+      plugin: GeneralPlugin<any>,
+    };
+    'requestUndefinedAdWarning': {
       elementId: string,
-      name: string,
-      type: string,
+    };
+    'requestBidsTimeout': {
+      initReady: boolean,
+      plugin: GeneralPlugin<any>,
     };
   }
 
@@ -87,41 +130,36 @@ declare namespace SortableAds {
 
   type EventListener<K extends EventKey> = (event: EventMap[K]) => void;
 
+  interface GPTPluginOption {
+    enableSingleRequest?: boolean;
+    disableInitialLoad?: boolean;
+  }
+
   interface API extends Array<() => void> {
     /**
-     * Get version of the SortableAds library
+     * Get setting with key
      */
-    getVersion(): string;
+    get<K extends keyof Setting>(key: K): Setting[K];
 
     /**
-     * Get debug flag
+     * Update setting with key and value
      */
-    getDebug(): boolean;
+    set<K extends keyof Setting>(key: K, value: Setting[K]): void;
 
     /**
-     * Set debug flag
+     * Define ads with provided configuration
      */
-    setDebug(value: boolean): void;
-
-    /**
-     * Get bidder timeout in milliseconds
-     */
-    getBidderTimeout(): number;
-
-    /**
-     * Set bidder timeout in milliseconds
-     */
-    setBidderTimeout(timeout: number): void;
-
-    /**
-     * Get the list of requested element ids
-     */
-    getRequestedElementIds(): string[];
+    defineAds(adConfigs: AdConfig[]): void;
 
     /**
      * Request ads for provided element ids
      */
     requestAds(elementIds: string[]): void;
+
+    /**
+     * Get the list of requested but not destroyed element ids
+     */
+    getRequestedElementIds(): string[];
 
     /**
      * Destroy ads for provided element ids
@@ -134,14 +172,29 @@ declare namespace SortableAds {
     loadNewPage(): void;
 
     /**
-     * Register Google Publisher Tag service with provided config
+     * Load provided plugin
      */
-    registerGPT(config: GPTConfig<GoogletagSlot>): void;
+    use<T>(plugin: GeneralPlugin<T>): void;
 
     /**
-     * Register Header Bidding service with provided config
+     * Load built-in GPT ad server plugin
      */
-    registerHB(config: HBConfig<any>): void;
+    useGPTAsync(option?: GPTPluginOption): void;
+
+    /**
+     * Load built-in Prebid HB plugin which is compatible with GPT ad server
+     */
+    usePrebidForGPTAsync(): void;
+
+    /**
+     * Load built-in Sortable HB plugin which is compatible with GPT ad server
+     */
+    useSortableForGPTAsync(): void;
+
+    /**
+     * Start serving ads
+     */
+    start(): void;
 
     /**
      * Add listener on specified event
@@ -159,6 +212,11 @@ declare namespace SortableAds {
     apiReady: boolean | undefined;
 
     /**
+     * Specify version of the SortableAds library
+     */
+    version: string;
+
+    /**
      * @param fn The function to run once the sortableads library is loaded
      */
     push(fn: () => void): number;
@@ -171,17 +229,17 @@ declare var sortableads: SortableAds.API;
 
 declare namespace DeployAds {
 
-  type AdSize = [number, number];
-
-  interface AdUnit {
-    elementId: string;
-    sizes: AdSize | AdSize[];
+  interface RequestBidsParams {
+    timeout: number;
+    elementIds: string[];
+    readyHandler: () => void;
   }
 
-  interface RequestBidsParams {
-    adUnits: AdUnit[];
-    timeout: number;
-    bidsReadyHandler: () => void;
+  interface QueuedEvent {
+    timestamp: number;
+    source: string;
+    name: string;
+    args: any[];
   }
 
   interface API {
@@ -196,14 +254,24 @@ declare namespace DeployAds {
     push(fn: () => void): number | undefined;
 
     /**
-     * Request bids for the provided AdUnit
+     * Collect queued events before deployads loaded
      */
-    requestBidsForGPT(params: RequestBidsParams): void;
+    queuedEvents: QueuedEvent[];
+
+    /**
+     * @param define ads with provided configs
+     */
+    defineAds(adConfigs: SortableAds.AdConfig[]): void;
+
+    /**
+     * Request bids for the provided parameters.
+     */
+    requestBidsForGPTAsync(params: RequestBidsParams): void;
 
     /**
      * Set the GPT slot targeting for the received bids
      */
-    updateTargetingForGPT(elementIds: string[]): void;
+    setTargetingForGPTAsync(elementIds: string[]): void;
 
     /**
      * Clean up any resources associated with an AdUnit. Call this when the div is removed from the page.

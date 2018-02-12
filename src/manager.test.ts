@@ -3,8 +3,8 @@ import Manager from './manager';
 
 /* tslint:disable:max-classes-per-file */
 
-class TestGPTConfig {
-  public config: SortableAds.GPTConfig<string>;
+class TestGPTPlugin {
+  public plugin: SortableAds.AdServerPlugin<string>;
   public initialized: boolean = false;
   public defined: boolean = false;
   public requested: boolean = false;
@@ -12,30 +12,32 @@ class TestGPTConfig {
   public loadedPage: boolean = false;
 
   constructor(opts: { [key: string]: any; } = {}) {
-    this.config = {
-      defineUnit: (divId: string) => {
-        this.defined = true;
-        return divId;
-      },
-      destroyUnits: (units: string[]) => {
-        this.destroyed = true;
-      },
-      init: (cb: SortableAds.CallbackFunction) => {
+    this.plugin = {
+      type: 'adServer',
+      name: 'GPT',
+      initAsync: cb => {
         this.initialized = true;
         cb();
       },
+      defineUnit: adUnit => {
+        this.defined = true;
+        return adUnit.elementId;
+      },
+      requestAdServer: context => {
+        this.requested = true;
+      },
+      destroyUnits: units => {
+        this.destroyed = true;
+      },
       loadNewPage: () => {
         this.loadedPage = true;
-      },
-      requestGPT: (context: SortableAds.GPTContext<string>) => {
-        this.requested = true;
       },
     };
   }
 }
 
-class TestHBConfig {
-  public config: SortableAds.HBConfig<string>;
+class TestHBPlugin {
+  public plugin: SortableAds.HeaderBiddingPlugin<string>;
   public initialized: boolean = false;
   public defined: boolean = false;
   public requested: boolean = false;
@@ -43,33 +45,35 @@ class TestHBConfig {
   public loadedPage: boolean = false;
 
   constructor(opts: { [key: string]: any; } = {}) {
-    this.config = {
-      defineUnit: (divId: string) => {
-        this.defined = true;
-        return divId;
-      },
-      destroyUnits: (units: string[]) => {
-        this.destroyed = true;
-      },
-      init: (cb: SortableAds.CallbackFunction) => {
+    this.plugin = {
+      type: 'headerBidding',
+      name: 'test-hb',
+      initAsync: cb => {
         this.initialized = true;
         if (opts.omitCb) {
           return;
         } else if (opts.delayCb > 0) {
-          setTimeout(() => {
-            cb();
-          }, opts.delayCb);
+          setTimeout(cb, opts.delayCb);
         } else {
           cb();
         }
       },
+      requestBids: (units, timeout, done) => {
+        this.requested = true;
+        done();
+      },
+      beforeRequestAdServer: units => {
+        /** noop */
+      },
+      defineUnit: adUnit => {
+        this.defined = true;
+        return adUnit.elementId;
+      },
+      destroyUnits: (units: string[]) => {
+        this.destroyed = true;
+      },
       loadNewPage: () => {
         this.loadedPage = true;
-      },
-      name: 'hb config',
-      requestHB: (context: SortableAds.HBContext<string>) => {
-        context.done();
-        this.requested = true;
       },
     };
   }
@@ -83,7 +87,12 @@ describe('Manager', () => {
 
   it('should have default bidder timeout as 1500ms', async () => {
     const manager = new Manager();
-    assert.equal(manager.getBidderTimeout(), 1500);
+    assert.equal(manager.get('bidderTimeout'), 1500);
+  });
+
+  it('should have default throttle timeout as 50ms', async () => {
+    const manager = new Manager();
+    assert.equal(manager.get('throttleTimeout'), 50);
   });
 
   describe('getRequestedElementIds', () => {
@@ -146,10 +155,14 @@ describe('Manager', () => {
   describe('registerGPT', () => {
     it('should enable requestAds to proceed with making requests', async () => {
       const manager = new Manager();
-      const gpt = new TestGPTConfig();
-      manager.registerGPT(gpt.config);
+      const gpt = new TestGPTPlugin();
+      const ids = ['test1', 'test2'];
+      const adConfigs = ids.map(elementId => ({ elementId }));
+      manager.defineAds(adConfigs);
+      manager.use(gpt.plugin);
+      manager.start();
 
-      manager.requestAds(['test1', 'test2']);
+      manager.requestAds(ids);
       assert.equal(manager.getRequestedElementIds().length, 2);
       assert.isTrue(gpt.initialized);
       assert.isFalse(gpt.defined);
@@ -162,8 +175,12 @@ describe('Manager', () => {
 
     it('should not define ad unit if the requested div was destroyed during throttling', async () => {
       const manager = new Manager();
-      const gpt = new TestGPTConfig();
-      manager.registerGPT(gpt.config);
+      const gpt = new TestGPTPlugin();
+      const ids = ['test1', 'test2'];
+      const adConfigs = ids.map(elementId => ({ elementId }));
+      manager.defineAds(adConfigs);
+      manager.use(gpt.plugin);
+      manager.start();
 
       manager.requestAds(['test1']);
       assert.equal(manager.getRequestedElementIds().length, 1);
@@ -185,14 +202,14 @@ describe('Manager', () => {
       manager.addEventListener('warning', event => {
         warned = true;
       });
-      const gpt1 = new TestGPTConfig();
-      const gpt2 = new TestGPTConfig();
+      const gpt1 = new TestGPTPlugin();
+      const gpt2 = new TestGPTPlugin();
 
-      manager.registerGPT(gpt1.config);
+      manager.use(gpt1.plugin);
       assert.isTrue(gpt1.initialized);
       assert.isFalse(warned);
 
-      manager.registerGPT(gpt2.config);
+      manager.use(gpt2.plugin);
       assert.isFalse(gpt2.initialized);
       assert.isTrue(warned);
     });
@@ -200,8 +217,13 @@ describe('Manager', () => {
     it('should send existing requests if requestAds was called before registerGPT', async () => {
       const manager = new Manager();
       manager.requestAds(['before-register']);
-      const gpt = new TestGPTConfig();
-      manager.registerGPT(gpt.config);
+      const gpt = new TestGPTPlugin();
+      const ids = ['before-register'];
+      const adConfigs = ids.map(elementId => ({ elementId }));
+      manager.defineAds(adConfigs);
+      manager.use(gpt.plugin);
+      manager.start();
+
       await sleep(THROTTLE_MS);
 
       assert.isTrue(gpt.initialized);
@@ -213,8 +235,11 @@ describe('Manager', () => {
   describe('registerHB', () => {
     it('should not define and request ads if GPT is not instantiated', async () => {
       const manager = new Manager();
-      const hb = new TestHBConfig();
-      manager.registerHB(hb.config);
+      const hb = new TestHBPlugin();
+      const ids = ['test1', 'test2'];
+      const adConfigs = ids.map(elementId => ({ elementId }));
+      manager.defineAds(adConfigs);
+      manager.use(hb.plugin);
 
       manager.requestAds(['test1', 'test2']);
       await sleep(THROTTLE_MS);
@@ -225,10 +250,14 @@ describe('Manager', () => {
 
     it('should define and request ads if GPT is instantiated', async () => {
       const manager = new Manager();
-      const gpt = new TestGPTConfig();
-      const hb = new TestHBConfig();
-      manager.registerGPT(gpt.config);
-      manager.registerHB(hb.config);
+      const gpt = new TestGPTPlugin();
+      const hb = new TestHBPlugin();
+      const ids = ['test1', 'test2'];
+      const adConfigs = ids.map(elementId => ({ elementId }));
+      manager.defineAds(adConfigs);
+      manager.use(gpt.plugin);
+      manager.use(hb.plugin);
+      manager.start();
 
       manager.requestAds(['test1', 'test2']);
       await sleep(THROTTLE_MS);
@@ -245,13 +274,18 @@ describe('Manager', () => {
 
     it('should not block GPT from requesting ads if HB is never initialized', async () => {
       const manager = new Manager();
-      manager.setBidderTimeout(50);
+      manager.set('bidderTimeout', 50);
 
-      const gpt = new TestGPTConfig();
-      const hb = new TestHBConfig({omitCb: true});
+      const gpt = new TestGPTPlugin();
+      const hb = new TestHBPlugin({omitCb: true});
 
-      manager.registerGPT(gpt.config);
-      manager.registerHB(hb.config);
+      const ids = ['test1', 'test2'];
+      const adConfigs = ids.map(elementId => ({ elementId }));
+      manager.defineAds(adConfigs);
+
+      manager.use(gpt.plugin);
+      manager.use(hb.plugin);
+      manager.start();
 
       manager.requestAds(['test1', 'test2']);
 
@@ -262,10 +296,10 @@ describe('Manager', () => {
       assert.isFalse(hb.requested);
 
       assert.isTrue(gpt.initialized);
-      assert.isTrue(gpt.defined);
+      assert.isFalse(gpt.defined);
       assert.isFalse(gpt.requested);
 
-      await sleep(manager.getBidderTimeout() + 100);
+      await sleep(manager.get('bidderTimeout') + 50);
       // after the bidder timeout expires, we will skip the HB
       // and continue with GPT
       assert.isTrue(gpt.defined);
@@ -274,18 +308,24 @@ describe('Manager', () => {
 
     it('should not request from the HB if it took too long to initialize', async () => {
       const manager = new Manager();
-      manager.setBidderTimeout(50);
+      manager.set('bidderTimeout', 50);
 
-      const delay = manager.getBidderTimeout() + 100;
-      const gpt = new TestGPTConfig();
-      const hb = new TestHBConfig({delayCb: delay});
+      const gpt = new TestGPTPlugin();
+      const hb = new TestHBPlugin({
+        delayCb: manager.get('bidderTimeout') + 150,
+      });
 
-      manager.registerGPT(gpt.config);
-      manager.registerHB(hb.config);
+      const ids = ['test1', 'test2'];
+      const adConfigs = ids.map(elementId => ({ elementId }));
+      manager.defineAds(adConfigs);
+
+      manager.use(gpt.plugin);
+      manager.use(hb.plugin);
+      manager.start();
 
       manager.requestAds(['test1', 'test2']);
 
-      await sleep(THROTTLE_MS + delay);
+      await sleep(manager.get('throttleTimeout') + manager.get('bidderTimeout') + 50 + 10);
       // HB bidReady callback should be aborted
       assert.isTrue(hb.initialized);
       assert.isFalse(hb.defined);
