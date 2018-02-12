@@ -36,7 +36,7 @@ export default (): SortableAds.HeaderBiddingPlugin<string> => {
 
   googletag.cmd.push(() => {
     googletagEvents.forEach(name => {
-      googletag.addEventListener(name, (...args: any[]) => {
+      googletag.pubads().addEventListener(name, (...args: any[]) => {
         pushToQueue('googletag', name, args);
       });
     });
