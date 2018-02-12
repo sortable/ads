@@ -71,9 +71,10 @@ export default class Service<T> {
     for (const adConfig of adConfigs) {
       const elementId = adConfig.elementId;
       if (!this.units.hasOwnProperty(elementId)) {
+        this.units[elementId] = null; // default
         this.tryCatch('defineUnit', () => {
           const unit = this.plugin.defineUnit(adConfig);
-          this.units[elementId] = unit;
+          this.units[elementId] = unit; // override default
           if (unit == null) {
             this.emitter.emitEvent('noUnitDefined', {
               adConfig,
