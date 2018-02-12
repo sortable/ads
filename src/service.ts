@@ -12,12 +12,11 @@ import { once } from './util';
  */
 
 export default class Service<T> {
-  protected emitter: EventEmitter<SortableAds.EventMap>;
-  protected plugin: SortableAds.GeneralPlugin<T>;
+  public ready: boolean = false;
+  public plugin: SortableAds.GeneralPlugin<T>;
 
-  private ready: boolean = false;
+  private emitter: EventEmitter<SortableAds.EventMap>;
   private queue: SortableAds.CallbackFunction[] = [];
-
   // T => the unit is defined unit for this element id
   // null | undefined => the unit is specified as missed / unused
   private units: { [elementId: string]: T | null | undefined } = {};

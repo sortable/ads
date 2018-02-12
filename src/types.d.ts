@@ -118,8 +118,12 @@ declare namespace SortableAds {
       plugin: GeneralPlugin<any>,
     };
     'requestUndefinedAdWarning': {
-      elementId: string;
-    }
+      elementId: string,
+    };
+    'requestBidsTimeout': {
+      initReady: boolean,
+      plugin: GeneralPlugin<any>,
+    };
   }
 
   type EventKey = keyof EventMap;

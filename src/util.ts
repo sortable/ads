@@ -54,4 +54,5 @@ export const allEvents: SortableAds.EventKey[] = [
  'start',
  'noUnitDefined',
  'requestUndefinedAdWarning',
+ 'requestBidsTimeout',
 ];

@@ -203,7 +203,7 @@ export default class Manager extends EventEmitter<SortableAds.EventMap> {
 
     const startTime = Date.now();
     const bidderTimeout = this.setting.bidderTimeout;
-    const waitingQueue: number[] = this.HBs.map((_, bidderId) => bidderId);
+    const waitingQueue: Array<Service<any>> = this.HBs.slice();
 
     const bidsReady = once(() => {
       adServer.waitReady(() => {
@@ -213,6 +213,13 @@ export default class Manager extends EventEmitter<SortableAds.EventMap> {
           return;
         }
 
+        waitingQueue.forEach(timeoutHB => {
+          this.emitEvent('requestBidsTimeout', {
+            initReady: timeoutHB.ready,
+            plugin: timeoutHB.plugin,
+          });
+        });
+
         this.HBs.forEach(hb => {
           hb.beforeRequestAdServer(hb.getUnits(activeAdConfigs));
         });
@@ -221,13 +228,13 @@ export default class Manager extends EventEmitter<SortableAds.EventMap> {
       });
     });
 
-    this.HBs.forEach((hb, bidderId) => {
+    this.HBs.forEach(hb => {
       hb.waitReady(() => {
         const waitingTime = Date.now() - startTime;
         const timeout = bidderTimeout - waitingTime;
         const done = once(() => {
           // remove that index from waitingQueue
-          const index = waitingQueue.indexOf(bidderId);
+          const index = waitingQueue.indexOf(hb);
           if (index >= 0) {
             waitingQueue.splice(index, 1);
           }
