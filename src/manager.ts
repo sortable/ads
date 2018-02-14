@@ -220,11 +220,13 @@ export default class Manager extends EventEmitter<SortableAds.EventMap> {
           });
         });
 
+        const gptUnits = adServer.getOrDefineUnits(activeAdConfigs);
+
         this.HBs.forEach(hb => {
-          hb.beforeRequestAdServer(hb.getUnits(activeAdConfigs));
+          hb.beforeRequestAdServer(hb.getOrDefineUnits(activeAdConfigs));
         });
 
-        adServer.requestAdServer(adServer.getUnits(activeAdConfigs));
+        adServer.requestAdServer(gptUnits);
       });
     });
 
@@ -256,7 +258,7 @@ export default class Manager extends EventEmitter<SortableAds.EventMap> {
           return;
         }
 
-        hb.requestBids(hb.getUnits(activeAdConfigs), timeout, done);
+        hb.requestBids(hb.getOrDefineUnits(activeAdConfigs), timeout, done);
       });
     });
 

@@ -24,7 +24,7 @@ describe('Service', () => {
     };
     const service = new Service(emitter, plugin);
 
-    service.getUnits(adConfigs);
+    service.getOrDefineUnits(adConfigs);
 
     assert.equal(calls, 2);
   });
@@ -55,7 +55,7 @@ describe('Service', () => {
     };
     const service = new Service(emitter, plugin);
 
-    service.requestBids(service.getUnits(adConfigs), 10, () => {/** noop */});
+    service.requestBids(service.getOrDefineUnits(adConfigs), 10, () => {/** noop */});
 
     assert.equal(calls, 1);
   });
@@ -85,7 +85,7 @@ describe('Service', () => {
     };
     const service = new Service(emitter, plugin);
 
-    service.requestAdServer(service.getUnits(adConfigs));
+    service.requestAdServer(service.getOrDefineUnits(adConfigs));
 
     assert.equal(calls, 1);
   });
