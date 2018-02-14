@@ -220,11 +220,13 @@ export default class Manager extends EventEmitter<SortableAds.EventMap> {
           });
         });
 
+        const gptUnits = adServer.getUnits(activeAdConfigs);
+
         this.HBs.forEach(hb => {
           hb.beforeRequestAdServer(hb.getUnits(activeAdConfigs));
         });
 
-        adServer.requestAdServer(adServer.getUnits(activeAdConfigs));
+        adServer.requestAdServer(gptUnits);
       });
     });
 
