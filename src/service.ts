@@ -62,7 +62,7 @@ export default class Service<T> {
     }
   }
 
-  public getUnits(adConfigs: SortableAds.AdConfig[]): T[] {
+  public getOrDefineUnits(adConfigs: SortableAds.AdConfig[]): T[] {
     if (!this.ready) {
       return [];
     }
