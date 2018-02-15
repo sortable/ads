@@ -570,8 +570,7 @@ adconfig = {
   elementId: 'some-id',
   sizes: [[300, 250], [300, 600]],
   prebid: {
-    // NOTE: code is replaced with elementId, but the property isn't defined in your adconfig
-    code: elementId,
+    // NOTE: code is not needed, it will be replaced with elementId by Ads Manager
     bids: [{
       bidder: 'appnexus',
       params: { placementId: '1234' },
