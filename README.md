@@ -6,7 +6,60 @@
 This repo contains libraries, examples and documentation for publishers integrating the Sortable ad framework into their sites.
 
 ## Table of Contents
-[TOC]
+* [Sortable Ads](#sortable-ads)
+  * [Table of Contents](#table-of-contents)
+  * [Ad Manager](#ad-manager)
+     * [Build (For contributors)](#build-for-contributors)
+     * [Usage (For consumers)](#usage-for-consumers)
+  * [Example Integrations](#example-integrations)
+  * [How to Debug](#how-to-debug)
+  * [Plugin Usage](#plugin-usage)
+     * [How to use GPT Async Plugin](#how-to-use-gpt-async-plugin)
+     * [How to use Prebid for GPT Async Plugin](#how-to-use-prebid-for-gpt-async-plugin)
+  * [Plugin Implementation](#plugin-implementation)
+     * [How to write your own Header Bidding Plugin](#how-to-write-your-own-header-bidding-plugin)
+     * [Plugin Documentation](#plugin-documentation)
+        * [Common Plugin Properties](#common-plugin-properties)
+           * [plugin.name](#pluginname)
+           * [plugin.initAsync(cb)](#plugininitasynccb)
+           * [plugin.defineUnit(adUnit)](#plugindefineunitadunit)
+           * [plugin.destroyUnits(units)](#plugindestroyunitsunits)
+           * [plugin.loadNewPage()](#pluginloadnewpage)
+        * [Ad Server Plugin Properties](#ad-server-plugin-properties)
+           * [plugin.type](#plugintype)
+           * [plugin.requestAdServer(units)](#pluginrequestadserverunits)
+        * [Header Bidding Plugin Properties](#header-bidding-plugin-properties)
+           * [plugin.type](#plugintype-1)
+           * [plugin.requestBids(units, timeout, cb)](#pluginrequestbidsunits-timeout-cb)
+           * [plugin.beforeRequestAdServer(units)](#pluginbeforerequestadserverunits)
+  * [API Documentation](#api-documentation)
+     * [Plugin Configuration](#plugin-configuration)
+     * [GPT Plugin Configuration](#gpt-plugin-configuration)
+     * [Prebid Plugin Configuration](#prebid-plugin-configuration)
+     * [Public API](#public-api)
+        * [sortableads.get(key)](#sortableadsgetkey)
+        * [sortableads.set(key, val)](#sortableadssetkey-val)
+        * [sortableads.defineAds(adConfigs)](#sortableadsdefineadsadconfigs)
+        * [sortableads.requestAds(elementIds)](#sortableadsrequestadselementids)
+        * [sortableads.getRequestedElementIds()](#sortableadsgetrequestedelementids)
+        * [sortableads.requestAds(elementIds)](#sortableadsrequestadselementids-1)
+        * [sortableads.destroyAds(elementIds)](#sortableadsdestroyadselementids)
+        * [sortableads.loadNewPage()](#sortableadsloadnewpage)
+        * [sortableads.use(plugin)](#sortableadsuseplugin)
+        * [sortableads.useGPTAsync(option)](#sortableadsusegptasyncoption)
+        * [sortableads.usePrebidForGPTAsync()](#sortableadsuseprebidforgptasync)
+        * [sortableads.useSortableForGPTAsync()](#sortableadsusesortableforgptasync)
+        * [sortableads.start()](#sortableadsstart)
+        * [sortableads.addEventListener(type, listener)](#sortableadsaddeventlistenertype-listener)
+        * [sortableads.removeEventListener(type, listener)](#sortableadsremoveeventlistenertype-listener)
+        * [sortableads.version](#sortableadsversion)
+        * [sortableads.apiReady](#sortableadsapiready)
+        * [sortableads.push(fn)](#sortableadspushfn)
+  * [Common Mistakes](#common-mistakes)
+     * [Are External Scripts Included?](#are-external-scripts-included)
+     * [Are DOM Elements Loaded?](#are-dom-elements-loaded)
+     * [Are Plugins Instantiated?](#are-plugins-instantiated)
+     * [Is the Header Bidder Timing Out?](#is-the-header-bidder-timing-out)
 
 ## Ad Manager
 
@@ -120,7 +173,7 @@ To add logging on additional events, use the addEventListener method with the fo
 
 Example of Default Output:
 
-Add screenshot here.
+![Default debug example output](/screenshots/debug-output.png "Default debug example output")
 
 ## Plugin Usage
 
@@ -129,8 +182,8 @@ Plugins are what Ads Manager uses to communicate with header bidders and ad serv
 ### How to use GPT Async Plugin
 
 To use the GPT async plugin:
-1. `sortableads.defineAds(`[AdConfig](#Plugin-Configuration)`)`
-2. `sortableads.useGPTAsync(`[option](#sortableadsuseGPTAsyncoption)`)`
+1. `sortableads.defineAds(`[AdConfig](#plugin-configuration)`)`
+2. `sortableads.useGPTAsync(`[option](#sortableadsusegptasyncsyncoption)`)`
 3. `sortableads.start()`
 
 See the [GPT](/examples/gpt-only.html) example integration for working code, and the configuration section for how to configure the plugin.
@@ -144,7 +197,7 @@ See the [GPT](/examples/gpt-only.html) example integration for working code, and
 ### How to use Prebid for GPT Async Plugin
 
 To use the GPT async plugin:
-1. `sortableads.defineAds(`[AdConfig](#Plugin-Configuration)`)`
+1. `sortableads.defineAds(`[AdConfig](#plugin-configuration)`)`
 2. `sortableads.usePrebidForGPTAsync()`
 3. `sortableads.start()`
 
@@ -158,11 +211,11 @@ The provided prebid-for-gpt-async plugin is a good example to follow. In general
 
 1. Create a Javascript object that implements the following properties:
     * [name](#pluginname)
-    * [initAsync](#plugininitAsynccb)
-    * [defineUnit](#plugindefineUnitadUnit)
-    * [requestBids](#pluginrequestBidsunits-timeout-cb)
-    * [beforeRequestAdServer](#pluginbeforeRequestAdServerunits)
-2. Add the properties you require to the [AdConfig](#Plugin-Configuration) object.
+    * [initAsync](#plugininitasynccb)
+    * [defineUnit](#plugindefineunitadunit)
+    * [requestBids](#pluginrequestbidsunits-timeout-cb)
+    * [beforeRequestAdServer](#pluginbeforerequestadserverunits)
+2. Add the properties you require to the [AdConfig](#plugin-configuration) object.
 3. Pass your AdConfig to defineAds(config).
 4. Register your plugin with `sortableads.use(plugin)`.
 
@@ -187,6 +240,7 @@ However, both implement the following properties:
 * **Type**: function
 * **Description**: This should define the process of initializing a particular service in an asynchronous fashion. The callback `cb` is passed by the API and should only be called once the service has been initialized successfully.
 * **Request Params**:
+
   | Param | Scope    | Type     | Description                   |
   |-------|----------|----------|-------------------------------|
   | cb    | Required | function | function invoked on callback. |
@@ -214,10 +268,11 @@ let plugin = {
 * **Description**: This should define the process of creating an "ad unit" as specified by a particular service. The "ad unit" should bundle all information that is required to include in a request to the service, and should be associated with the div that the ad should slot into.
 * **Returns**: Object, representing an "ad unit"
 * **Request Params**:
+
   | Param     | Scope    | Type     | Description             |
   |-----------|----------|----------|-------------------------|
   | adConfig  | Required | function | ad unit [config] object |
-[config]: #Plugin-Configuration
+[config]: #plugin-configuration
 * **Example**:
 ```javascript
 let plugin = {
@@ -240,6 +295,7 @@ let plugin = {
 * **Type**: function
 * **Description**: This method implements the process of "destroying" an ad unit. Sometimes, the definition or creation of an ad unit may cause side effects. This method can be used to perform necessary cleanup when the associated div is removed from the DOM, as occurs in the case of virtual DOM manipulation or management.
 * **Request Params**:
+
   | Param | Scope    | Type          | Description                                   |
   |-------|----------|---------------|-----------------------------------------------|
   | units | Required | Array[Object] | array of ad units as returned from defineUnit |
@@ -270,6 +326,7 @@ The ad server is the final destination in the header bidding process. This plugi
 * **Type**: function
 * **Description**: This method implements the process of making a request to the ad server. Ideally, the ad unit type should already be in the correct format for the request. If the ad server API has different ways of making requests due to different configurations, this method should handle that as well.
 * **Request Params**:
+
   | Param | Scope    | Type          | Description                                   |
   |-------|----------|---------------|-----------------------------------------------|
   | units | Required | Array[Object] | array of ad units as returned from defineUnit |
@@ -300,6 +357,7 @@ A header bidder bids on your inventory. This plugin should implement how to send
 * **Type**: function
 * **Description**: This method implements sending the request to the header bidding service. The callback `cb` should be called by the service after receiving the bid response.
 * **Request Params**:
+
   | Param   | Scope    | Type          | Description                                           |
   |---------|----------|---------------|-------------------------------------------------------|
   | units   | Required | Array[Object] | array of ad units as returned from `defineUnit`       |
@@ -328,6 +386,7 @@ let plugin = {
 * **Type**: function
 * **Description**: This method is called for every header bidder before Ads Manager makes a request to the ad server. It should be used to perform any header-bidder specific setup for the ad server request.
 * **Request Params**:
+
   | Param | Scope    | Type          | Description                                     |
   |-------|----------|---------------|-------------------------------------------------|
   | units | Required | Array[Object] | array of ad units as returned from `defineUnit` |
@@ -604,7 +663,7 @@ Associate given value with given key. As with `get`, only valid keys and their c
 
 #### sortableads.defineAds(adConfigs)
 
-Takes in a list of ad configs, one for each "ad unit". Each ad config contains all properties required for header bidders (ex. Prebid) and ad servers (ex. GPT) to define that ad unit for their request. See [Plugin Configuration](#Plugin-Configuration) for more information on how AdConfig is defined.
+Takes in a list of ad configs, one for each "ad unit". Each ad config contains all properties required for header bidders (ex. Prebid) and ad servers (ex. GPT) to define that ad unit for their request. See [Plugin Configuration](#plugin-configuration) for more information on how AdConfig is defined.
 
 **Request Params**:
 
@@ -674,7 +733,7 @@ Takes a plugin and registers it for use with Ads Manager. The plugin consists of
 |--------|----------|--------|----------------------------------------------|
 | plugin | Required | Object | See [plugin configuration] for more details. |
 
-[plugin configuration]: #Plugin-Configuration
+[plugin configuration]: #plugin-configuration
 
 ---
 
@@ -717,7 +776,7 @@ Ad requests to header bidders will be queued until `start` is called.
 
 #### sortableads.addEventListener(type, listener)
 
-Add an event listener for a specified type of event. See the [debugging](#How-to-Debug) section for more information.
+Add an event listener for a specified type of event. See the [debugging](#how-to-debug) section for more information.
 
 **Request Params**:
 
@@ -725,8 +784,6 @@ Add an event listener for a specified type of event. See the [debugging](#How-to
 |-----------|----------|----------|-------------------------------------|
 | type      | Required | Object   | The event type.                     |
 | listener  | Required | function | The function to invoke on callback. |
-
-[plugin configuration]: #Plugin-Configuration
 
 ---
 
@@ -740,8 +797,6 @@ Remove an event listener if it was previously registered via addEventListener.
 |-----------|----------|----------|-------------------------------------|
 | type      | Required | Object   | The event type.                     |
 | listener  | Required | function | The function to invoke on callback. |
-
-[plugin configuration]: #Plugin-Configuration
 
 ---
 
