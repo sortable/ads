@@ -22,8 +22,8 @@ export default class Service<T> {
   private units: { [elementId: string]: T | null | undefined } = {};
 
   /**
-   * Calls plugin.init and provides it with a callback to run all scheduled
-   * callbacks added from [[Service.waitReady]] once the service has successfully
+   * Calls plugin.initAsync and which will run all scheduled callbacks
+   * added from Service.waitReady once the service has successfully
    * initialized.
    *
    * @param emitter The instance of Manager that manages the Service.
@@ -91,7 +91,7 @@ export default class Service<T> {
   }
 
   /**
-   * Proxies to plugin.requestHB.
+   * Proxies to plugin.requestBids.
    */
   public requestBids(units: T[], timeout: number, done: SortableAds.CallbackFunction) {
     if (!this.ready) {
@@ -120,7 +120,7 @@ export default class Service<T> {
   }
 
   /**
-   * Proxies to plugin.requestGPT.
+   * Proxies to plugin.requestAdServer.
    */
   public requestAdServer(units: T[]) {
     if (!this.ready) {

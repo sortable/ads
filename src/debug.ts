@@ -9,7 +9,7 @@ const STORAGE_KEY = 'sortableads_debug';
  * Query with "?sortableads_debug=false" will set debug to be false for current page.
  * Query with "?sortableads_debug=true_storage" will set debug to be true and save it to localStorage.
  * Query with "?sortableads_debug=false_storage" will set debug to be false and save it to localStorage.
- * Query without "?sortabelads_debug" will check localStorage to take previous setting.
+ * Query without "?sortableads_debug" will check localStorage to take previous setting.
  * Otherwise, by default, debug is false.
  */
 export default () => {

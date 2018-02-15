@@ -84,7 +84,7 @@ export default class Manager extends EventEmitter<SortableAds.EventMap> {
   }
 
   /**
-   * Proxies to [[Service.loadNewPage]].
+   * Proxies to Service.loadNewPage.
    */
   public loadNewPage(): void {
     this.tryCatch('loadNewPage', () => {
