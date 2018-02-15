@@ -1,9 +1,12 @@
 
 **WARNING: These libraries are under development and only availiable to select Sortable customers.**
 
-# Sortable Ads
+## Sortable Ads
 
 This repo contains libraries, examples and documentation for publishers integrating the Sortable ad framework into their sites.
+
+## Table of Contents
+[TOC]
 
 ## Ad Manager
 
@@ -21,6 +24,8 @@ We have also provided an example of using the Ad Manager API in a React componen
 
 ### Build (For contributors)
 
+NOTE: As the project is in its early stages, we are not accepting PRs at the moment. However, you are welcome to open issues or feature requests.
+
 To build, you must have NodeJS and NPM installed on your environment.
 
 First, run `npm install` to install all the required dependencies.
@@ -37,6 +42,8 @@ HTML documentation will be hosted at localhost:9000/docs/
 
 ### Usage (For consumers)
 
+NOTE: If you are already a Sortable customer, please consult with your account manager to find the best way to integrate with Ads Manager.
+
 To consume this package as an [NPM](https://www.npmjs.com/package/@sortable/ads) module:
 
 `npm install @sortable/ads --save`
@@ -51,17 +58,17 @@ import '@sortable/ads';
 require('@sortable/ads');
 
 // use the API via global variable
-sortableads.[method]
+sortableads.method
 ...
 ```
 
 Note that unlike most NPM modules that expose functionality, this module simply instantiates a global variable **sortableads** and populates it with the public API calls.
 
-You can also consume the library by including the JavaScript bundle as provided by NPM's CDN:
+For easy **testing**, you can also consume the library by including the JavaScript bundle as provided by a CDN:
 
 `<script src="https://cdn.jsdelivr.net/npm/@sortable/ads@x.x.x/dist/sortableads.min.js" async/>`
 
-where x.x.x can be changed to whichever version of the API you wish to use.
+where x.x.x can be changed to whichever version of the API you wish to use. However, note that this link should **NOT** be used in production. You can download the Ads Manager script and serve it from your web hosting server.
 
 Note that if you are loading the script asynchronously, you should include the following script and define sortableads before you use it:
 
@@ -71,38 +78,122 @@ In the asynchronous use case, wrap all API calls in a callback, and add it to th
 
 ```javascript
 sortableads.push(() => {
-  sortableads.[method]
+  sortableads.method
   ...
 });
 ```
 
-## API Documentation
+## Example Integrations
 
-### Types
+The [examples](/examples) directory contains some example integrations using the Ad Manager.
 
-#### CallbackFunction
+## How to Debug
 
-This is a typedef of `() => void`.
+You can pass in query parameters to enable debugging for Ads Manager.
 
-#### Config<T>
+* `?sortableads_debug=true`
+* `?sortableads_debug=false`
+* `?sortableads_debug=true_storage`
+* `?sortableads_debug=false_storage`
 
-A config is an object containing a common set of methods that should be registered by the API to define the workflow for initialization, creation of "ad units", and sending valid requests for a particular service, such as GPT, Prebid or Sortable Enterprise.
+Ads Manager will look for the query string to determine whether or not to enable/disable debugging. The _storage variants will cause your selection to be persisted through LocalStorage. Afterwards, if the query string is not passed, Ads Manager will look under LocalStorage to check the persistant value for debugging.
 
-We differentiate between configs used for GPT and HBs as GPTConfig and HBConfig respectively.
+Once debugging is turned on, Ads Manager will perform logging when certain events occur by default. You can filter for only logging statements by the prefix **SORTABLEADS**.
 
-However, both contains the following methods:
+To add logging on additional events, use the addEventListener method with the following events:
 
-**Required**
+| Event                     | Description                                                                    |
+|---------------------------|--------------------------------------------------------------------------------|
+| eventListenerError        | There was an error in an event handler.                                        |
+| error                     | The API was not used as expected, and further behaviour may be undefined.      |
+| warning                   | The API may have been used incorrectly, but further behaviour will be defined. |
+| updateSetting             | An Ads Manager setting is changed.                                             |
+| defineAds                 | Start defining ads for all header bidders.                                     |
+| requestAds                | Start requesting ads for all header bidders.                                   |
+| destroyAds                | Start destroying ads for all header bidders.                                   |
+| loadNewPage               | A new page is loaded.                                                          |
+| usePlugin                 | A plugin is registered.                                                        |
+| start                     | Start the header bidding process.                                              |
+| noUnitDefined             | No ad units are defined.                                                       |
+| requestUndefinedAdWarning | An undefined ad was requested.                                                 |
+| requestBidsTimeout        | A header bidder timed out from initialization or sending bid requests.         |
 
-`init: (cb: CallbackFunction) => void`
+Example of Default Output:
 
-This should define the process of initializing a particular service. The callback `cb` is passed by the API and should only be called once the service has been initialized successfully.
+Add screenshot here.
 
-Example:
+## Plugin Usage
 
+Plugins are what Ads Manager uses to communicate with header bidders and ad servers. Ads Manager comes with a ready to use GPT Async plugin for an ad server integration, and a Prebid plugin for a header bidder integration.
+
+### How to use GPT Async Plugin
+
+To use the GPT async plugin:
+1. `sortableads.defineAds(`[AdConfig](#Plugin-Configuration)`)`
+2. `sortableads.useGPTAsync(`[option](#sortableadsuseGPTAsyncoption)`)`
+3. `sortableads.start()`
+
+See the [GPT](/examples/gpt-only.html) example integration for working code, and the configuration section for how to configure the plugin.
+
+**Note**: Under the hood, `useGPTAsync` will push commands to GPT's command queue, calling GPT methods such as [disableInitialLoad], [enableSingleRequest] and [enableServices]. The user should not have to call GPT methods manually. However, if custom GPT calls are necessary, they should be pushed to the command queue **before** `useGPTAsync` is called.
+
+[disableInitialLoad]: https://developers.google.com/doubleclick-gpt/reference#googletag.PubAdsService_disableInitialLoad
+[enableSingleRequest]: https://developers.google.com/doubleclick-gpt/reference#googletag.PubAdsService_enableSingleRequest
+[enableServices]: https://developers.google.com/doubleclick-gpt/reference#googletag.enableServices
+
+### How to use Prebid for GPT Async Plugin
+
+To use the GPT async plugin:
+1. `sortableads.defineAds(`[AdConfig](#Plugin-Configuration)`)`
+2. `sortableads.usePrebidForGPTAsync()`
+3. `sortableads.start()`
+
+See the [Prebid for GPT](/examples/gpt-and-prebid.html) example integration for working code, and the configuration section for how to configure the plugin.
+
+## Plugin Implementation
+
+### How to write your own Header Bidding Plugin
+
+The provided prebid-for-gpt-async plugin is a good example to follow. In general, the steps to write a plugin are:
+
+1. Create a Javascript object that implements the following properties:
+    * [name](#pluginname)
+    * [initAsync](#plugininitAsynccb)
+    * [defineUnit](#plugindefineUnitadUnit)
+    * [requestBids](#pluginrequestBidsunits-timeout-cb)
+    * [beforeRequestAdServer](#pluginbeforeRequestAdServerunits)
+2. Add the properties you require to the [AdConfig](#Plugin-Configuration) object.
+3. Pass your AdConfig to defineAds(config).
+4. Register your plugin with `sortableads.use(plugin)`.
+
+### Plugin Documentation
+
+All interaction with the external services that Ads Manager connects to should be encapsulated within a Plugin. There are 2 types of plugins: one for header bidding, and one for ad servers. These plugins expose slightly different interfaces.
+
+However, both implement the following properties:
+
+#### Common Plugin Properties
+
+##### `plugin.name`
+* **Scope**: Required
+* **Type**: string
+* **Description**: The name of the service that this plugin enables.
+
+---
+
+##### `plugin.initAsync(cb)`
+
+* **Scope**: Required
+* **Type**: function
+* **Description**: This should define the process of initializing a particular service in an asynchronous fashion. The callback `cb` is passed by the API and should only be called once the service has been initialized successfully.
+* **Request Params**:
+  | Param | Scope    | Type     | Description                   |
+  |-------|----------|----------|-------------------------------|
+  | cb    | Required | function | function invoked on callback. |
+* **Example**:
 ```javascript
-let config = {
-  init: () => {
+let plugin = {
+  initAsync: (cb) => {
     window.googletag = window.googletag || {};
     window.googletag.cmd = window.googletag.cmd || [];
     window.googletag.cmd.push(() => {
@@ -114,188 +205,573 @@ let config = {
 };
 ```
 
-`defineUnit: (divId: string) => T | null | undefined`
+---
 
-This should define the process of creating an "ad unit" as specified by a particular service. The type of the "ad unit" T should bundle all information that is required to include in a request to the service, and should be associated with the div that the ad should slot into. Some services may take more control in the process of creating what we can define as an ad slot.
+##### `plugin.defineUnit(adUnit)`
 
-Example:
+* **Scope**: Required
+* **Type**: function
+* **Description**: This should define the process of creating an "ad unit" as specified by a particular service. The "ad unit" should bundle all information that is required to include in a request to the service, and should be associated with the div that the ad should slot into.
+* **Returns**: Object, representing an "ad unit"
+* **Request Params**:
+  | Param     | Scope    | Type     | Description             |
+  |-----------|----------|----------|-------------------------|
+  | adConfig  | Required | function | ad unit [config] object |
+[config]: #Plugin-Configuration
+* **Example**:
+```javascript
+let plugin = {
+  defineUnit: adConfig => {
+    const GPTConfig = adConfig.GPT;
+    const sizes = GPTConfig.sizes || adConfig.sizes;
+    const slot = googletag.defineSlot(GPTConfig.adUnitPath, sizes, GPTConfig.elementId);
+    slot.addService(googletag.pubads());
+    return slot;
+  },
+  ...
+};
+```
+
+---
+
+##### `plugin.destroyUnits(units)`
+
+* **Scope**: Optional
+* **Type**: function
+* **Description**: This method implements the process of "destroying" an ad unit. Sometimes, the definition or creation of an ad unit may cause side effects. This method can be used to perform necessary cleanup when the associated div is removed from the DOM, as occurs in the case of virtual DOM manipulation or management.
+* **Request Params**:
+  | Param | Scope    | Type          | Description                                   |
+  |-------|----------|---------------|-----------------------------------------------|
+  | units | Required | Array[Object] | array of ad units as returned from defineUnit |
+
+---
+
+##### `plugin.loadNewPage()`
+
+* **Scope**: Optional
+* **Type**: function
+* **Description**: This method is used to define how to interact with the service when a new page view should occur programmatically. Similar to destroyUnits, some cleanup, reinitialization, or refresh logic may need to be applied on the existing/defined ad units in order to synchronize them with the service.
+
+---
+
+#### Ad Server Plugin Properties
+
+The ad server is the final destination in the header bidding process. This plugin should implement how to make a request to the ad server. There can only be one AdServerPlugin attached to Ads Manager. The following are properties specific to Ad Server Plugins:
+
+##### `plugin.type`
+
+* **Scope**: Required
+* **Type**: string
+* **Description**: The type of the plugin is `'adServer'`, set by default.
+
+##### `plugin.requestAdServer(units)`
+
+* **Scope**: Required
+* **Type**: function
+* **Description**: This method implements the process of making a request to the ad server. Ideally, the ad unit type should already be in the correct format for the request. If the ad server API has different ways of making requests due to different configurations, this method should handle that as well.
+* **Request Params**:
+  | Param | Scope    | Type          | Description                                   |
+  |-------|----------|---------------|-----------------------------------------------|
+  | units | Required | Array[Object] | array of ad units as returned from defineUnit |
+* **Example**:
+```javascript
+let plugin = {
+  ...
+  requestAdServer: slots => {
+    googletag.pubads().refresh(slots);
+  },
+  ...
+};
+```
+
+#### Header Bidding Plugin Properties
+
+A header bidder bids on your inventory. This plugin should implement how to send bid requests to the header bidder. The following are properties specific to Ad Server Plugins:
+
+##### `plugin.type`
+
+* **Scope**: Required
+* **Type**: string
+* **Description**: The type of the plugin is `'headerBidding'`, set by default.
+
+##### `plugin.requestBids(units, timeout, cb)`
+
+* **Scope**: Required
+* **Type**: function
+* **Description**: This method implements sending the request to the header bidding service. The callback `cb` should be called by the service after receiving the bid response.
+* **Request Params**:
+  | Param   | Scope    | Type          | Description                                           |
+  |---------|----------|---------------|-------------------------------------------------------|
+  | units   | Required | Array[Object] | array of ad units as returned from `defineUnit`       |
+  | timeout | Required | number        | timeout in ms to wait for header bidder               |
+  | cb      | Required | function      | function which should be called when request finished |
+* **Example**:
+```javascript
+let plugin = {
+  ...
+  requestBids: (adUnits, timeout, done) => {
+    pbjs.requestBids({
+      timeout,
+      adUnits,
+      bidsBackHandler: () => {
+        done();
+      },
+    });
+  },
+  ...
+};
+```
+
+##### `plugin.beforeRequestAdServer(units)`
+
+* **Scope**: Required
+* **Type**: function
+* **Description**: This method is called for every header bidder before Ads Manager makes a request to the ad server. It should be used to perform any header-bidder specific setup for the ad server request.
+* **Request Params**:
+  | Param | Scope    | Type          | Description                                     |
+  |-------|----------|---------------|-------------------------------------------------|
+  | units | Required | Array[Object] | array of ad units as returned from `defineUnit` |
+* **Example**:
+```javascript
+let plugin = {
+  ...
+  beforeRequestAdServer: adUnits => {
+    pbjs.setTargetingForGPTAsync(adUnits);
+  },
+  ...
+};
+```
+
+## API Documentation
+
+### Plugin Configuration
+
+The `AdConfig` is a configuration object for one ad unit, which is associated with an element on the page by its ID. The object contains an interface for each built-in header bidder and ad server plugin provided. When you write your own plugin for another service, you can add the ad unit properties you require for that service as part of its interface in the AdConfig.
+
+The AdConfig only has two general properties:
+
+`elementId` (required) - The unique string ID for a DOM element on a page where the ad should go.
 
 ```javascript
-let config = {
-  defineUnit(divId) {
-    if (divId === 'divIdName') {
-      // associate the googletag Slot with the div id, and pass all the necessary information to define the slot
-      return window.googletag.defineSlot('/6355419/Travel/Europe/France/Paris',
-          [300, 250], divId).addService(window.googletag.pubads());
+elementId: 'nameOfDiv'
+```
+
+`sizes` (optional) - The acceptable sizes of the ad to be returned.
+
+```javascript
+sizes: [[300, 250], [300, 600]]
+```
+
+The other parameters you can set in the AdConfig are passed to specific plugins. For example, to configure the provided async GPT plugin, you would put all the parameters it needs in the GPT object. All the interfaces are **optional**, as you can choose which header bidding services you would like to send requests to on a per ad-unit basis.
+
+### GPT Plugin Configuration
+
+The interface for the provided async GPT plugin. Most parameters listed are arguments passed to methods in GPT under [googletag.Slot](https://developers.google.com/doubleclick-gpt/reference#googletag.Slot). To minimize duplication, refer to GPT documentation for more detail on GPT specific API calls. Additional comments refer to special behaviour for Ads Manager.
+
+**Full Example with all properties:**
+
+```javascript
+adconfig = {
+  elementId: 'div-id-1',
+  sizes: [[300, 250], [300, 600]],
+  GPT: {
+    /* required */
+    adUnitPath: '/1234/slotName',
+
+    /* following are optional */
+    sizes: [728, 90],
+    sizeMapping: [
+      { viewport: [1024, 768], sizes: [970, 250] },
+      { viewport: [980, 690],  sizes: [728, 90] },
+      { viewport: [640, 480],  sizes: 'fluid' },
+      { viewport: [0, 0], sizes: [88, 31] }
+    ],
+    targeting: {
+      dog: 'dawg',
+      bird: 'burd'
+    },
+    attributes: {
+      cat: 'kat',
+      mouse: 'mawse'
+    },
+    categoryExclusion: 'badCategory',
+    clickUrl: 'www.somememesite.com',
+    collapseEmptyDiv: true,
+    collapseBeforeAdFetch: false,
+    forceSafeFrame: true,
+    safeFrameConfig: {
+      allowOverlayExpansion: false,
+      allowPushExpansion: true,
+      sandbox: false
     }
   },
   ...
 };
 ```
 
-`requestHB/requestGPT: (context: HB/GPTContext<T>) => void`
+**GPT Properties**
 
-These methods implement the process of actually making a request to an HB or GPT. The provided `context` should provide the "ad units" in the right format for the request. Only one of these methods should exist at a time: `requestHB` for `HBConfig`, and `requestGPT` for `GPTConfig`.
+`adUnitPath`
+* **Scope**: required
+* **Type**: string
+* **Description**: The ad unit path to use to define the slot.
+* **DFP Method**: [`googletag.Slot.defineSlot`](https://developers.google.com/doubleclick-gpt/reference#googletag.defineSlot)
 
-Example:
+---
+
+`sizes`
+* **Scope**: optional
+* **Type**: [`googletag.GeneralSize`](https://developers.google.com/doubleclick-gpt/reference#googletag.GeneralSize)
+* **Description**: The width and height for a specific slot.
+* **Note**: This will override AdConfig.sizes. GPT will default to AdConfig.sizes if this is missing.
+* **DFP Method**: [`googletag.Slot.defineSlot`](https://developers.google.com/doubleclick-gpt/reference#googletag.defineSlot)
+
+---
+
+`sizeMapping`
+* **Scope**: optional
+* **Type**: Array of [`googletag.SizeMapping`](https://developers.google.com/doubleclick-gpt/reference#googletag.SizeMapping)
+* **Description**: Mapping between viewport size and ad sizes.
+* **DFP Method**: [`googletag.Slot.defineSizeMapping`](https://developers.google.com/doubleclick-gpt/reference#googletag.Slot_defineSizeMapping)
+
+---
+
+`targeting`
+* **Scope**: optional
+* **Type**: Object
+* **Description**: Custom targeting key-value pairs to set for a specific slot.
+* **DFP Method**: [`googletag.Slot.setTargeting`](https://developers.google.com/doubleclick-gpt/reference#googletag.Slot_setTargeting)
+
+---
+
+`attributes`
+* **Scope**: optional
+* **Type**: Object
+* **Description**: AdSense attribute key-value pairs that apply to all slots.
+* **DFP Method**: [`googletag.Slot.set`](https://developers.google.com/doubleclick-gpt/reference#googletag.Slot_set)
+
+---
+
+`categoryExclusion`
+* **Scope**: optional
+* **Type**: string
+* **Description**: Category to exclude for a specific slot.
+* **DFP Method**: [`googletag.Slot.setCategoryExclusion`](https://developers.google.com/doubleclick-gpt/reference#googletag.Slot_setCategoryExclusion)
+
+---
+
+`clickUrl`
+* **Scope**: optional
+* **Type**: string
+* **Description**: The url to open when the ad is clicked.
+* **DFP Method**: [`googletag.Slot.setClickUrl`](https://developers.google.com/doubleclick-gpt/reference#googletag.Slot_setClickUrl)
+
+---
+
+`collapseEmptyDiv`
+* **Scope**: optional
+* **Type**: boolean
+* **Description**: Flag to enable collapsing empty divs.
+* **DFP Method**: [`googletag.Slot.setCollapseEmptyDiv`](https://developers.google.com/doubleclick-gpt/reference#googletag.Slot_setCollapseEmptyDiv)
+
+---
+
+`collapseBeforeAdFetch`
+* **Scope**: optional
+* **Type**: boolean
+* **Description**: Option to collapse empty divs before fetching ads. Used with collapseEmptyDiv.
+* **DFP Method**: [`googletag.Slot.setCollapseEmptyDiv`](https://developers.google.com/doubleclick-gpt/reference#googletag.Slot_setCollapseEmptyDiv)
+
+---
+
+`forceSafeFrame`
+* **Scope**: optional
+* **Type**: boolean
+* **Description**: Flag to set all ad slots to render with safe frames.
+* **DFP Method**: [`googletag.Slot.setForceSafeFrame`](https://developers.google.com/doubleclick-gpt/reference#googletag.Slot_setForceSafeFrame)
+
+---
+
+`safeFrameConfig`
+* **Scope**: optional
+* **Type**: [googletag.SafeFrameConfig](https://developers.google.com/doubleclick-gpt/reference#googletag.SafeFrameConfig)
+* **Description**: Set page level preferences for SafeFrame configuration.
+* **DFP Method**: [`googletag.Slot.setForceSafeFrame`](https://developers.google.com/doubleclick-gpt/reference#googletag.Slot_setForceSafeFrame)
+
+---
+
+### Prebid Plugin Configuration
+
+The interface for the provided GPT-compatible Prebid plugin. See the [Prebid Adunit Reference](http://prebid.org/dev-docs/adunit-reference.html) for more information about the following parameters.
+
+**Full Example with all properties:**
 
 ```javascript
-requestHB(context) {
-  context.beforeRequestGPT = function () {
-    window.pbjs.setTargetingForGPTAsync(context.ids);
-  };
-  window.pbjs.requestBids({
-    // context.units is created from defineUnit above
-    adUnits: context.units,
-    timeout: context.timeout,
-    bidsBackHandler() {
-      // call context.done() when request finished
-      context.done();
-    }
-  });
-}
+adconfig = {
+  elementId: 'some-id',
+  sizes: [[300, 250], [300, 600]],
+  prebid: {
+    // NOTE: code is replaced with elementId, but the property isn't defined in your adconfig
+    code: elementId,
+    bids: [{
+      bidder: 'appnexus',
+      params: { placementId: '1234' },
+      labelAny: ['phone', 'desktop'],
+      labelAll: ['tablet', 'eur']
+    }],
+    mediaTypes: ['video', 'banner'],
+    labelAny: ['food', 'travel'],
+    labelAll: ['recreation', 'entertainment']
+  }
+};
 ```
 
-**Optional**
+`sizes`
+* **Scope**: optional
+* **Type**: Array[Number] or Array[Array[Number]]
+* **Description**: The width and height for a specific slot.
+* **Note**: This will override AdConfig.sizes. Prebid will default to AdConfig.sizes if this is missing.
 
-`destroyUnits: (units: T[]) => void`
+---
 
-This method implements the process of "destroying" an ad unit. Sometimes, the definition or creation of an ad unit may cause side effects. This method can be used to perform necessary cleanup when the associated div is removed from the DOM, as occurs in the case of virtual DOM manipulation or management.
+`bids`
+* **Scope**: required
+* **Type**: Array[Object]
+* **Description**: Bid objects for a given ad unit.
+* **Prebid Reference**: [`adUnit.bids`](http://prebid.org/dev-docs/adunit-reference.html#adunitbids)
 
-`loadNewPage: () => void`
+---
 
-This method is used to define how to interact with the service when a new page view should occur programmatically. Similar to destroyUnits, some cleanup, reinitialization, or refresh logic may need to be applied on the existing/defined ad units in order to synchronize them with the service.
+`mediaTypes`
+* **Scope**: optional
+* **Type**: Object
+* **Description**: Allowed media types for the ad.
+* **Prebid Reference**: [`adUnit.mediaTypes`](http://prebid.org/dev-docs/adunit-reference.html#adunitmediatypes)
 
-#### Context<T>
+---
 
-The Context contains the ad units which hold all the information required to make a request to the service.
+`labelAny`
+* **Scope**: optional
+* **Type**: Array[string]
+* **Description**: Labels for conditional ad units. The condition passes if any label matches.
+* **Prebid Reference**: [`adUnit`](http://prebid.org/dev-docs/adunit-reference.html#adunit)
 
-Again, we differentiate the Context using GPTContext and HBContext. Most of the properties are read-only, but some should HB specific properties should be supplied in the `requestHB` method.
+---
 
-The following are common for GPT and HB, and are read-only properties:
+`labelAll`
+* **Scope**: optional
+* **Type**: Array[string]
+* **Description**: Labels for conditional ad units. The condition passes if all labels match.
+* **Prebid Reference**: [`adUnit`](http://prebid.org/dev-docs/adunit-reference.html#adunit)
 
-`ids: string[]`
+---
 
-List of all element ids requested that were processed for this context.
+### Public API
 
-`newIds: string[]`
+#### sortableads.get(key)
 
-List of new element ids that were requested as compared to the previous context.
+Get the value associated with given key. The return value will be undefined if the key doesn't exist. This generic map is used to configure Ads Manager in an extensible way.
 
-`newUnits: T[]`
+**Returns**: `object` - the value for the key, can be arbitrary type
 
-List of new ad units mapped by index with `newIds`.
+**Valid Keys**:
 
-`refreshIds: string[]`
+| Key Name        | Value Type |
+|-----------------|------------|
+| bidderTimeout   | number     |
+| throttleTimeout | number     |
 
-Analagous to `newIds`, but for existing element ids.
+**Request Params**:
 
-`refreshUnits: T[]`
+| Param | Scope    | Type   | Description       |
+|-------|----------|--------|-------------------|
+| key   | Required | string | key of config map |
 
-Analagous to `newUnits`, but for existing ad units.
+---
 
-`units: T[]`
+#### sortableads.set(key, val)
 
-List of all ad units.
+Associate given value with given key. As with `get`, only valid keys and their corresponding return types shown above should be used.
 
-**HB Specific Properties**
+**Request Params**:
 
-`timeout: number`
+| Param | Scope    | Type   | Description       |
+|-------|----------|--------|-------------------|
+| key   | Required | string | key of config map |
+| val   | Required | object | value for the key |
 
-This is the user-supplied timeout in ms that should be provided as part of the request to the HB.
+---
 
-`done: () => void`
+#### sortableads.defineAds(adConfigs)
 
-This method is provided by the API and should only be called when an HB is finished with its request. If you need to modify this function to additional perform functionality, make sure to invoke the original method in the new one.
+Takes in a list of ad configs, one for each "ad unit". Each ad config contains all properties required for header bidders (ex. Prebid) and ad servers (ex. GPT) to define that ad unit for their request. See [Plugin Configuration](#Plugin-Configuration) for more information on how AdConfig is defined.
 
-Example:
+**Request Params**:
 
-```javascript
-origFn = context.done;
-context.done = () => {
-  ...additional functionality...
-  origFn();
-}
-```
+| Param     | Scope    | Type            | Description                        |
+|-----------|----------|-----------------|------------------------------------|
+| adConfigs | Required | Array[AdConfig] | array of AdConfig for each ad unit |
 
-`beforeRequestGPT: () => void`
+---
 
-This method should be user-supplied, and should set targeting for GPT based on the results returned from the HB. This method will run before sending a request to GPT.
+#### sortableads.requestAds(elementIds)
+  
+Request ads for the list of DOM element ids. This method is throttled and queues requests, so it can be called multiple times.
 
-Example:
+**Request Params**:
 
-```javascript
-requestHB(context) {
-  context.beforeRequestGPT = function () {
-    window.pbjs.setTargetingForGPTAsync(context.ids);
-  };
-  ...make the request...
-}
-```
+| Param      | Scope    | Type          | Description          |
+|------------|----------|---------------|----------------------|
+| elementIds | Required | Array[string] | array of element ids |
 
-### Public API Methods
+---
 
-`getVersion(): string`
+#### sortableads.getRequestedElementIds()
 
-Get the API version.
-
-`getDebug(): boolean`
-
-Get the debug flag.
-
-`setDebug(value: boolean): void`
-
-Set the debug flag. If debugging is enabled, listeners are registered on certain lifecycle events to log the details.
-
-`getBidderTimeout(): number`
-
- Get the bidder timeout in ms.
-
-`setBidderTimeout(timeout: number): void`
-
-Set the bidder timeout in ms. It is how long the API waits for header bidders before sending the results as targeting to GPT/DFP.
-
-`getRequestedElementIds(): string[]`
+**Returns**: Array[string]
 
 Get all requested ad element ids.
 
-`requestAds(elementIds: string[]): void`
+---
 
-Request ads for the list of DOM element ids. This method is throttled and queues requests, so it can be called multiple times.
+#### sortableads.requestAds(elementIds)
 
-`destroyAds(elementIds: string[]): void`
+Request ads for the list of DOM element ids. This method is throttled and queues requests, so it can be called multiple times. Ad requests will be queued until `sortableads.start` is called.
+
+**Request Params**:
+
+| Param      | Scope    | Type          | Description          |
+|------------|----------|---------------|----------------------|
+| elementIds | Required | Array[string] | array of element ids |
+
+---
+
+#### sortableads.destroyAds(elementIds)
 
 Command to destroy given ads.
 
-`loadNewPage(): void`
+**Request Params**:
+
+| Param      | Scope    | Type          | Description          |
+|------------|----------|---------------|----------------------|
+| elementIds | Required | Array[string] | array of element ids |
+
+---
+
+#### sortableads.loadNewPage()
 
 Used to declare a new pageview for the SPA use case.
 
-`registerGPT(config: GPTConfig<GoogletagSlot>): void`
+---
 
-Register GPT with the GPTConfig object given. GPT can only be registered once. Upon registration, queued ad requests are resumed.
+#### sortableads.use(plugin)
 
-`registerHB(config: HBConfig<any>): void`
+Takes a plugin and registers it for use with Ads Manager. The plugin consists of settings for either a header bidder, or an ad server. An ad server plugin can only be registered once.
 
-Register HB with the HBConfig object given.
+**Request Params**:
 
-`addEventListener<K extends EventKey>(type: K, listener: EventListener<K>): void`
+| Param  | Scope    |Type    | Description                                  |
+|--------|----------|--------|----------------------------------------------|
+| plugin | Required | Object | See [plugin configuration] for more details. |
 
-Add an event listener for a specified type of event. Useful for debugging.
+[plugin configuration]: #Plugin-Configuration
 
-`removeEventListener<K extends EventKey>(type: K, listener: EventListener<K>): void`
+---
+
+#### sortableads.useGPTAsync(option)
+
+Use a provided out-of-the-box GPT plugin that works with asynchronous usage of GPT and takes some initialization options.
+
+**Optional Parameters**
+
+| Property            | Scope    | Type    | Default |
+|---------------------|----------|---------|---------|
+| enableSingleRequest | Optional | boolean | true    |
+| disableInitialLoad  | Optional | boolean | true    |
+
+**Request Params**:
+
+| Param  | Scope    |Type    | Description                             |
+|--------|----------|--------|-----------------------------------------|
+| option | Required | Object | Optional initial configuration for GPT. |
+
+---
+
+#### sortableads.usePrebidForGPTAsync()
+
+Use a provided out-of-the-box GPT-compatible Prebid HB plugin.
+
+---
+
+#### sortableads.useSortableForGPTAsync()
+
+Use a provided out-of-the-box GPT-compatible Sortable HB plugin.
+
+---
+
+#### sortableads.start()
+
+Ad requests to header bidders will be queued until `start` is called.
+
+---
+
+#### sortableads.addEventListener(type, listener)
+
+Add an event listener for a specified type of event. See the [debugging](#How-to-Debug) section for more information.
+
+**Request Params**:
+
+| Param     | Scope    |Type      | Description                         |
+|-----------|----------|----------|-------------------------------------|
+| type      | Required | Object   | The event type.                     |
+| listener  | Required | function | The function to invoke on callback. |
+
+[plugin configuration]: #Plugin-Configuration
+
+---
+
+#### sortableads.removeEventListener(type, listener)
 
 Remove an event listener if it was previously registered via addEventListener.
 
-`apiReady: boolean | undefined`
+**Request Params**:
+
+| Param     | Scope    |Type      | Description                         |
+|-----------|----------|----------|-------------------------------------|
+| type      | Required | Object   | The event type.                     |
+| listener  | Required | function | The function to invoke on callback. |
+
+[plugin configuration]: #Plugin-Configuration
+
+---
+
+#### sortableads.version
+
+The version of the Ads Manager API, which should match the NPM versioning.
+
+---
+
+#### sortableads.apiReady
 
 A flag which should be used to determine if the Ads Manager API is ready to use.
 
-`push(fn: () => void): number`
+---
 
-Prior to initialization, API calls should be pushed as callbacks for the sortableads array. These will be called by the API once it initializes.
+#### sortableads.push(fn)
+
+Prior to initialization, API calls should be pushed as callbacks for the sortableads array. These will be called by the API once it initializes. Using push after the API initializes will simply execute the function passed.
+
+**Request Params**:
+
+| Param | Scope    |Type      | Description                         |
+|-------|----------|----------|-------------------------------------|
+| fn    | Required | function | The function to invoke on callback. |
+
+---
 
 ## Common Mistakes
+
+### Are External Scripts Included?
 
 Ensure that any required external scripts are included in the HTML. For example, the GPT library should be loaded in the head of the document. Many libraries will provide a global command queue to enqueue callbacks to run when they are loaded successfully.
 
@@ -310,7 +786,11 @@ Example:
 </html>
 ```
 
+### Are DOM Elements Loaded?
+
 Ensure that API calls which interact with DOM elements are run after such elements are loaded. The easiest way to do this is to load the script synchronously before the end of the body tag, after the elements it depends on have been loaded. Alternatively, set-up code can be run in the head of the document, with each ad div containing an inline script to push a callback to requestAds on the sortableads queue. This will request the ad as each ad div finishes loading.
+
+**NOTE: The asynchronous method should always be used if possible.**
 
 Examples:
 
@@ -323,13 +803,13 @@ Examples:
   </head>
   <body>
     ...
-    <div id="ad-slot-1"/>
-    <div id="ad-slot-2"/>
-    <div id="ad-slot-3"/>
+    <div id="ad-slot-1"></div>
+    <div id="ad-slot-2"></div>
+    <div id="ad-slot-3"></div>
     <!-- This is not async! -->
-    <script src="https://cdn.jsdelivr.net/npm/@sortable/ads@x.x.x/dist/sortableads.min.js"/>
+    <script src="sortableads.min.js"/>
     <script>
-      ...configure API and request ads here...
+      // configure API, the divs above are loaded...
     </script>
   </body>
 </html>
@@ -341,12 +821,12 @@ Examples:
 <html>
   <head>
     <!-- This is async! -->
-    <script src="https://cdn.jsdelivr.net/npm/@sortable/ads@x.x.x/dist/sortableads.min.js" async/>
+    <script src="sortableads.min.js" async/>
     <script>
       // define sortableads if necessary, and only perform API calls within callbacks
-      sortableads = sortableads || [];
+      var sortableads = sortableads || [];
       sortableads.push(() => {
-        sortableads.setBidderTimeout(300);
+        sortableads.set('bidderTimeout', 300);
       });
     </script>
   </head>
@@ -364,12 +844,14 @@ Examples:
 </html>
 ```
 
-Ensure that when defining init(cb), the callback cb is called in an enqueued function to inform the Ads Manager API that the service is ready. If the callback is called too early, or not called at all, the HB will eventually timeout.
+### Are Plugins Instantiated?
+
+Ensure that when defining `Plugin.initAsync(cb)`, the callback `cb` is called in an enqueued function to inform the Ads Manager API that the service is ready. If the callback is called too early, or not called at all, the HB will eventually timeout.
 
 Example:
 ```javascript
-let config = {
-  init: () => {
+let plugin = {
+  initAsync: () => {
     window.googletag = window.googletag || {};
     window.googletag.cmd = window.googletag.cmd || [];
     window.googletag.cmd.push(() => {
@@ -384,14 +866,5 @@ let config = {
 };
 ```
 
-Ensure that Context.done() is called in Config.requestHB after receiving the bids. Not doing so will cause the HB to timeout, and the context to be discarded from setting targeting for GPT.
-
-Ensure that Context.beforeRequestGPT is supplied in Config.requestHB. The supplied callback will run after all HBs have made their requests, and before sending the results to GPT. The user should define how to set targeting on the ad slots in this callback.
-
-## Example Integrations
-
-The [examples](/examples) directory contains some example integrations using the Ad Manager.
-
-## Sortable Container API
-
-The DeployAds API in [src/types.d.ts](/src/types.d.ts) documents the types for the Sortable container API. Although it's recommended to use this API in combination with the ad manager, it's provided for reference.
+### Is the Header Bidder Timing Out?
+Ensure that the `done` callback for `HeaderBiddingPlugin.requestBids` is called after receiving the bids. Not doing so will cause the HB to timeout, delaying the request to the ad server.
