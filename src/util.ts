@@ -56,3 +56,11 @@ export const allEvents: SortableAds.EventKey[] = [
  'requestUndefinedAdWarning',
  'requestBidsTimeout',
 ];
+
+export function isArray(x: any): x is any[] {
+  return Object.prototype.toString.call(x) === '[object Array]';
+}
+
+export function isString(x: any): x is string {
+  return Object.prototype.toString.call(x) === '[object String]';
+}
