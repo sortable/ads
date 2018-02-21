@@ -1,6 +1,6 @@
 import EventEmitter from './event-emitter';
 import Service from './service';
-import { isArray, once } from './util';
+import { isArray, isString, once } from './util';
 
 /**
  * Manager is the class which implements the public Ads Manager API.
@@ -60,6 +60,12 @@ export default class Manager extends EventEmitter<SortableAds.EventMap> {
       if (!isArray(elementIds)) {
         elementIds = [elementIds];
       }
+      if (!elementIds.every(isString)) {
+        this.emitEvent('warning', {
+          message: 'requestAds with non-string argument',
+        });
+        elementIds = elementIds.filter(isString);
+      }
       this.emitEvent('requestAds', { elementIds });
       elementIds.forEach(elementId => {
         this.requestQueue[elementId] = true;
@@ -77,6 +83,12 @@ export default class Manager extends EventEmitter<SortableAds.EventMap> {
     this.tryCatch('destroyAds', () => {
       if (!isArray(elementIds)) {
         elementIds = [elementIds];
+      }
+      if (!elementIds.every(isString)) {
+        this.emitEvent('warning', {
+          message: 'destroyAds with non-string argument',
+        });
+        elementIds = elementIds.filter(isString);
       }
       this.emitEvent('destroyAds', { elementIds });
       elementIds.forEach(elementId => {
