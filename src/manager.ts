@@ -1,6 +1,6 @@
 import EventEmitter from './event-emitter';
 import Service from './service';
-import { once } from './util';
+import { isArray, once } from './util';
 
 /**
  * Manager is the class which implements the public Ads Manager API.
@@ -36,8 +36,11 @@ export default class Manager extends EventEmitter<SortableAds.EventMap> {
     this.emitEvent('updateSetting', { name, previousValue, updatedValue });
   }
 
-  public defineAds(adConfigs: SortableAds.AdConfig[]): void {
+  public defineAds(adConfigs: SortableAds.AdConfig | SortableAds.AdConfig[]): void {
     this.tryCatch('defineAds', () => {
+      if (!isArray(adConfigs)) {
+        adConfigs = [adConfigs];
+      }
       this.emitEvent('defineAds', { adConfigs });
       for (const adConfig of adConfigs) {
         this.adConfigMap[adConfig.elementId] = adConfig;
@@ -52,8 +55,11 @@ export default class Manager extends EventEmitter<SortableAds.EventMap> {
    *
    * @param elementIds The ids for the elements that requested ads should fill
    */
-  public requestAds(elementIds: string[]): void {
+  public requestAds(elementIds: string | string[]): void {
     this.tryCatch('requestAds', () => {
+      if (!isArray(elementIds)) {
+        elementIds = [elementIds];
+      }
       this.emitEvent('requestAds', { elementIds });
       elementIds.forEach(elementId => {
         this.requestQueue[elementId] = true;
@@ -67,8 +73,11 @@ export default class Manager extends EventEmitter<SortableAds.EventMap> {
     return Object.keys(this.requestedAds);
   }
 
-  public destroyAds(elementIds: string[]) {
+  public destroyAds(elementIds: string | string[]) {
     this.tryCatch('destroyAds', () => {
+      if (!isArray(elementIds)) {
+        elementIds = [elementIds];
+      }
       this.emitEvent('destroyAds', { elementIds });
       elementIds.forEach(elementId => {
         delete this.requestedAds[elementId];

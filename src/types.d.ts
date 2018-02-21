@@ -149,12 +149,12 @@ declare namespace SortableAds {
     /**
      * Define ads with provided configuration
      */
-    defineAds(adConfigs: AdConfig[]): void;
+    defineAds(adConfigs: AdConfig | AdConfig[]): void;
 
     /**
      * Request ads for provided element ids
      */
-    requestAds(elementIds: string[]): void;
+    requestAds(elementIds: string | string[]): void;
 
     /**
      * Get the list of requested but not destroyed element ids
@@ -164,7 +164,7 @@ declare namespace SortableAds {
     /**
      * Destroy ads for provided element ids
      */
-    destroyAds(elementIds: string[]): void;
+    destroyAds(elementIds: string | string[]): void;
 
     /**
      * Indicate that it's a new page
