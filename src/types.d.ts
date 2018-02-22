@@ -77,8 +77,8 @@ declare namespace SortableAds {
   interface Setting {
     bidderTimeout: number;
     throttleTimeout: number;
-    reactVersion: string;
-    adsReactVersion: string;
+    reactVersion?: string;
+    adsReactVersion?: string;
   }
 
   interface UpdateEvent<T, K extends keyof T> {
