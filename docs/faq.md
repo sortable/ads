@@ -1,13 +1,10 @@
 # FAQ
 
-## How to set bidder timeout ?
+## How to change header bidding timeout ?
 
-TODO
-
-## Question X
-
-TODO
-
-## Question Y
-
-TODO
+```js
+sortableads.push(function () {
+  // Set bidder timeout as 2 seconds / 2000 milliseconds.
+  sortableads.set('bidderTimeout', 2000);
+});
+```
