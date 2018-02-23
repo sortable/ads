@@ -6,7 +6,7 @@
   * [Examples](examples.md)
 
 * Guide
-
+  * [Plugin System](plugin-system.md)
   * [Use GPT Plugin](use-gpt-plugin.md)
   * [Use Prebid Plugin](use-prebid-plugin.md)
   * [Use Sortable Plugin](use-sortable-plugin.md)
