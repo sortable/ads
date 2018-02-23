@@ -14,6 +14,12 @@
   googletag.cmd.push(function() {
     googletag.pubads().set("adsense_background_color", "FFFFFF");
   });
+  sortableads.push(function() {
+    sortableads.useGPTAsync({
+      disableInitialLoad: false,
+      enableSingleRequest: true,
+    });
+  });
 </script>
 <script>
   googletag.cmd.push(function() {
@@ -25,8 +31,6 @@
       .setTargeting("gender", "male")
       .setTargeting("age", "20-30");
     googletag.pubads().setTargeting("topic","basketball");
-    googletag.pubads().enableSingleRequest();
-    googletag.enableServices();
   });
 </script>
 </head>
