@@ -9,13 +9,13 @@
             enableSingleRequest: true,
             disableInitialLoad: true
         });
+        sortableads.usePrebidForGPTAsync();
+        sortableads.set('bidderTimeout', 700);
     });
   </script>
   <!-- Prebid Config Section START -->
   <!-- Make sure this is inserted before your GPT tag -->
   <script>
-    var PREBID_TIMEOUT = 700;
-
     var adUnits = [{
         code: 'div-gpt-ad-1460505748561-0',
         mediaTypes: {
@@ -58,26 +58,7 @@
 
     pbjs.que.push(function() {
         pbjs.addAdUnits(adUnits);
-        pbjs.requestBids({
-            bidsBackHandler: sendAdserverRequest
-        });
     });
-
-    function sendAdserverRequest() {
-        if (pbjs.adserverRequestSent) return;
-        pbjs.adserverRequestSent = true;
-        googletag.cmd.push(function() {
-            pbjs.que.push(function() {
-                pbjs.setTargetingForGPTAsync();
-                googletag.pubads().refresh();
-            });
-        });
-    }
-
-    setTimeout(function() {
-        sendAdserverRequest();
-    }, PREBID_TIMEOUT);
-
   </script>
   <!-- Prebid Boilerplate Section END -->
 
