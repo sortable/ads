@@ -1,8 +1,8 @@
 # Commen Issues
 
-## Issue 1
+## Using Free CDN in Production
 
-TODO
+It's mostly used for demo, example and development.
 
 ## Issue 2
 
