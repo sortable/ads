@@ -1,13 +1,10 @@
 # Use Prebid Plugin
 
-## Instruction for Prebid TODO 1
+To use the GPT async plugin:
 
-TODO
+1. `sortableads.defineAds(`[AdConfig](#plugin-configuration)`)`
+2. `sortableads.usePrebidForGPTAsync()`
+3. `sortableads.useGPTAsync()`
+4. `sortableads.start()`
 
-## Instruction for Prebid TODO 2
-
-TODO
-
-## Instruction for Prebid TODO 3
-
-TODO
+See the [Prebid for GPT](/examples/gpt-and-prebid.html) example integration for working code, and the configuration section for how to configure the plugin.

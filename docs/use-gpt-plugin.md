@@ -1,13 +1,15 @@
 # Use GPT Plugin
 
-## Instruction for GPT TODO 1
+To use the GPT async plugin:
 
-TODO
+1. `sortableads.defineAds(`[AdConfig](#plugin-configuration)`)`
+2. `sortableads.useGPTAsync(`[option](#sortableadsusegptasyncsyncoption)`)`
+3. `sortableads.start()`
 
-## Instruction for GPT TODO 2
+See the [GPT](/examples/gpt-only.html) example integration for working code, and the configuration section for how to configure the plugin.
 
-TODO
+**Note**: Under the hood, `useGPTAsync` will push commands to GPT's command queue, calling GPT methods such as [disableInitialLoad], [enableSingleRequest] and [enableServices]. The user should not have to call GPT methods manually. However, if custom GPT calls are necessary, they should be pushed to the command queue **before** `useGPTAsync` is called.
 
-## Instruction for GPT TODO 3
-
-TODO
+[disableInitialLoad]: https://developers.google.com/doubleclick-gpt/reference#googletag.PubAdsService_disableInitialLoad
+[enableSingleRequest]: https://developers.google.com/doubleclick-gpt/reference#googletag.PubAdsService_enableSingleRequest
+[enableServices]: https://developers.google.com/doubleclick-gpt/reference#googletag.enableServices
