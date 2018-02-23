@@ -1,0 +1,63 @@
+<html>
+<head>
+<!-- This CDN file is for demo only. Do not use it in production. -->
+<script async="async" src="https://cdn.jsdelivr.net/npm/@sortable/ads/dist/sortableads.min.js">
+</script>
+<script async="async" src="https://www.googletagservices.com/tag/js/gpt.js">
+</script>
+<script>
+  var sortableads = sortableads || [];
+  var googletag = googletag || {};
+  googletag.cmd = googletag.cmd || [];
+</script>
+<script>
+  sortableads.push(function() {
+    googletag.cmd.push(function() {
+      googletag.pubads().set("adsense_background_color", "FFFFFF");
+      googletag.pubads().setTargeting("topic","basketball");
+    });
+    sortableads.useGPTAsync({
+      enableSingleRequest: true,
+      disableInitialLoad: false
+    });
+    sortableads.defineAds([{
+      elementId: "div-gpt-ad-123456789-0",
+      sizes: [728, 90],
+      GPT: {
+        adUnitPath: "/19968336/header-bid-tag-0",
+        targeting: {
+          "interests": ["sports", "music", "movies"]
+        }
+      }
+    }, {
+      elementId: "div-gpt-ad-123456789-1",
+      sizes: [[468, 60], [728, 90], [300, 250]],
+      GPT: {
+        adUnitPath: "/19968336/header-bid-tag1",
+        targeting: {
+          "gender": "male",
+          "age": "20-30"
+        }
+      }
+    }]);
+    sortableads.start();
+  });
+</script>
+</head>
+<body>
+  <div id="div-gpt-ad-123456789-0" style="width: 728px; height: 90px">
+    <script>
+      sortableads.push(function() {
+        sortableads.requestAds(["div-gpt-ad-123456789-0"]);
+      });
+    </script>
+  </div>
+    <div id="div-gpt-ad-123456789-1">
+    <script>
+      sortableads.push(function() {
+        sortableads.requestAds(["div-gpt-ad-123456789-1"]);
+      });
+    </script>
+  </div>
+</body>
+</html>
