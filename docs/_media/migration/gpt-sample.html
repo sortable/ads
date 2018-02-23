@@ -11,10 +11,11 @@
   googletag.cmd = googletag.cmd || [];
 </script>
 <script>
-  googletag.cmd.push(function() {
-    googletag.pubads().set("adsense_background_color", "FFFFFF");
-  });
   sortableads.push(function() {
+    googletag.cmd.push(function() {
+      googletag.pubads().set("adsense_background_color", "FFFFFF");
+      googletag.pubads().setTargeting("topic","basketball");
+    });
     sortableads.useGPTAsync({
       enableSingleRequest: true,
       disableInitialLoad: false
@@ -30,7 +31,6 @@
       .addService(googletag.pubads())
       .setTargeting("gender", "male")
       .setTargeting("age", "20-30");
-    googletag.pubads().setTargeting("topic","basketball");
   });
 </script>
 </head>
