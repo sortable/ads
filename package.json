@@ -9,7 +9,7 @@
     "url": "https://github.com/sortable/ads.git"
   },
   "scripts": {
-    "docsify-serve": "docsify serve ./docs",
+    "docs": "docsify serve ./docs",
     "test": "npm run build && nyc mocha -r ts-node/register src/**/*.test.ts",
     "clean": "rm -rf dist",
     "build": "npm run clean && tslint --project . && webpack",

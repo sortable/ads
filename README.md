@@ -55,11 +55,6 @@ This repo contains libraries, examples and documentation for publishers integrat
         * [sortableads.version](#sortableadsversion)
         * [sortableads.apiReady](#sortableadsapiready)
         * [sortableads.push(fn)](#sortableadspushfn)
-  * [Common Mistakes](#common-mistakes)
-     * [Are External Scripts Included?](#are-external-scripts-included)
-     * [Are DOM Elements Loaded?](#are-dom-elements-loaded)
-     * [Are Plugins Instantiated?](#are-plugins-instantiated)
-     * [Is the Header Bidder Timing Out?](#is-the-header-bidder-timing-out)
 
 ## Ad Manager
 
@@ -673,7 +668,7 @@ Takes in a list of ad configs, one for each "ad unit". Each ad config contains a
 ---
 
 #### sortableads.requestAds(elementIds)
-  
+
 Request ads for the list of DOM element ids. This method is throttled and queues requests, so it can be called multiple times.
 
 **Request Params**:
@@ -822,103 +817,3 @@ Prior to initialization, API calls should be pushed as callbacks for the sortabl
 | fn    | Required | function | The function to invoke on callback. |
 
 ---
-
-## Common Mistakes
-
-### Are External Scripts Included?
-
-Ensure that any required external scripts are included in the HTML. For example, the GPT library should be loaded in the head of the document. Many libraries will provide a global command queue to enqueue callbacks to run when they are loaded successfully.
-
-Example:
-
-```html
-<html>
-  <head>
-    <!-- Make sure you include GPT before using it! -->
-    <script src="https://www.googletagservices.com/tag/js/gpt.js" async/>
-  </head>
-</html>
-```
-
-### Are DOM Elements Loaded?
-
-Ensure that API calls which interact with DOM elements are run after such elements are loaded. The easiest way to do this is to load the script synchronously before the end of the body tag, after the elements it depends on have been loaded. Alternatively, set-up code can be run in the head of the document, with each ad div containing an inline script to push a callback to requestAds on the sortableads queue. This will request the ad as each ad div finishes loading.
-
-**NOTE: The asynchronous method should always be used if possible.**
-
-Examples:
-
-**Synchronous**
-
-```html
-<html>
-  <head>
-    ...
-  </head>
-  <body>
-    ...
-    <div id="ad-slot-1"></div>
-    <div id="ad-slot-2"></div>
-    <div id="ad-slot-3"></div>
-    <!-- This is not async! -->
-    <script src="sortableads.min.js"/>
-    <script>
-      // configure API, the divs above are loaded...
-    </script>
-  </body>
-</html>
-```
-
-**Asynchronous**
-
-```html
-<html>
-  <head>
-    <!-- This is async! -->
-    <script src="sortableads.min.js" async/>
-    <script>
-      // define sortableads if necessary, and only perform API calls within callbacks
-      var sortableads = sortableads || [];
-      sortableads.push(() => {
-        sortableads.set('bidderTimeout', 300);
-      });
-    </script>
-  </head>
-  <body>
-    ...
-    <div id="ad-slot-1">
-      <script>
-        // callbacks should be used everywhere in the asynchronous scenario
-        sortableads.push(() => {
-          sortableads.requestAds(['ad-slot-1']);
-        });
-      </script>
-    </div>
-  </body>
-</html>
-```
-
-### Are Plugins Instantiated?
-
-Ensure that when defining `Plugin.initAsync(cb)`, the callback `cb` is called in an enqueued function to inform the Ads Manager API that the service is ready. If the callback is called too early, or not called at all, the HB will eventually timeout.
-
-Example:
-```javascript
-let plugin = {
-  initAsync: () => {
-    window.googletag = window.googletag || {};
-    window.googletag.cmd = window.googletag.cmd || [];
-    window.googletag.cmd.push(() => {
-      ...google related initialization...
-      // CORRECT
-      cb(); // googletag is definitely initialized here!
-    });
-    // INCORRECT
-    cb(); // googletag may not be initialized here!
-  },
-  ...
-};
-```
-
-### Is the Header Bidder Timing Out?
-Ensure that the `done` callback for `HeaderBiddingPlugin.requestBids` is called after receiving the bids. Not doing so will cause the HB to timeout, delaying the request to the ad server.
