@@ -5,30 +5,16 @@
     <script src="https://cdn.jsdelivr.net/npm/@sortable/ads/dist/sortableads.min.js" async></script>
     <script> var sortableads = sortableads || []; </script>
     <script>
-     var PREBID_TIMEOUT = 1000;
-
-     var googletag = googletag || {};
-     googletag.cmd = googletag.cmd || [];
-
-     function initAdserver() {
-       if (pbjs.initAdserverSet) return;
-       (function() {
-         var gads = document.createElement('script');
-         gads.async = true;
-         gads.type = 'text/javascript';
-         var useSSL = 'https:' == document.location.protocol;
-         gads.src = (useSSL ? 'https:' : 'http:') +
-                    '//www.googletagservices.com/tag/js/gpt.js';
-         var node = document.getElementsByTagName('script')[0];
-         node.parentNode.insertBefore(gads, node);
-       })();
-       pbjs.initAdserverSet = true;
-     };
-
-     setTimeout(initAdserver, PREBID_TIMEOUT);
-
-     var pbjs = pbjs || {};
-     pbjs.que = pbjs.que || [];
+     (function() {
+       var gads = document.createElement('script');
+       gads.async = true;
+       gads.type = 'text/javascript';
+       var useSSL = 'https:' == document.location.protocol;
+       gads.src = (useSSL ? 'https:' : 'http:') +
+                  '//www.googletagservices.com/tag/js/gpt.js';
+       var node = document.getElementsByTagName('script')[0];
+       node.parentNode.insertBefore(gads, node);
+     })();
 
      (function() {
        var pbjsEl = document.createElement("script");
@@ -42,7 +28,7 @@
      sortableads.push(function() {
        sortableads.useGPTAsync();
        sortableads.usePrebidForGPTAsync();
-       sortableads.set('bidderTimeout', PREBID_TIMEOUT);
+       sortableads.set('bidderTimeout', 1000);
        sortableads.defineAds([{
          elementId: 'div-gpt-ad-1438287399331-0',
          GPT: {
@@ -85,14 +71,6 @@
          }
        }]);
        sortableads.start();
-     });
-
-     pbjs.que.push(function() {
-       pbjs.requestBids({
-         bidsBackHandler: function(bidResponses) {
-           initAdserver();
-         }
-       })
      });
     </script>
 
