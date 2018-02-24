@@ -41,6 +41,8 @@
 
      sortableads.push(function() {
        sortableads.useGPTAsync();
+       sortableads.usePrebidForGPTAsync();
+       sortableads.set('bidderTimeout', PREBID_TIMEOUT);
      });
 
      pbjs.que.push(function() {
@@ -95,15 +97,8 @@
      });
 
      function refreshBid() {
-       pbjs.que.push(function() {
-         pbjs.requestBids({
-           timeout: PREBID_TIMEOUT,
-           adUnitCodes: ['div-gpt-ad-1438287399331-0'],
-           bidsBackHandler: function() {
-             pbjs.setTargetingForGPTAsync(['div-gpt-ad-1438287399331-0']);
-             googletag.pubads().refresh([rightSlot]);
-           }
-         });
+       sortableads.push(function() {
+         sortableads.requestAds(['div-gpt-ad-1438287399331-0']);
        });
      }
     </script>
