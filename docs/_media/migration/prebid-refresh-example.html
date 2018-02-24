@@ -39,6 +39,10 @@
        pbjsTargetEl.insertBefore(pbjsEl, pbjsTargetEl.firstChild);
      })();
 
+     sortableads.push(function() {
+       sortableads.useGPTAsync();
+     });
+
      pbjs.que.push(function() {
        var adUnits = [{
          code: 'div-gpt-ad-1438287399331-0',
@@ -88,10 +92,6 @@
        rightSlot = googletag.defineSlot('/19968336/header-bid-tag-0', [[300, 250], [300, 600]], 'div-gpt-ad-1438287399331-0').addService(googletag.pubads());
 
        topSlot = googletag.defineSlot('/19968336/header-bid-tag1', [[728, 90], [970, 90]], 'div-gpt-ad-1438287399331-1').addService(googletag.pubads());
-
-       googletag.pubads().disableInitialLoad();
-       googletag.pubads().enableSingleRequest();
-       googletag.enableServices();
      });
 
      function refreshBid() {
