@@ -2,7 +2,7 @@
 
 ## Standard Ads
 
-[Basic Example](//jsfiddle.net/vqv8r7np/6/embedded/html,result/ ':include :type=iframe width=100% height=700 allowpaymentrequest allowfullscreen frameborder=0')
+[Basic Example](//jsfiddle.net/vqv8r7np/9/embedded/html,result/ ':include :type=iframe width=100% height=700 allowpaymentrequest allowfullscreen frameborder=0')
 
 ## Refresh Ads by Time
 
