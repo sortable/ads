@@ -17,7 +17,7 @@ We have also provided an example of using the Ad Manager API in a React componen
 
 ### Usage (For consumers)
 
-Detailed guide, API reference and examples are available at [https://dev.sortable.com/ads](https://dev.sortable.com/ads).
+Detailed guide, API reference and examples are available at [http://dev.sortable.com/ads](http://dev.sortable.com/ads).
 
 ### Build (For contributors)
 
