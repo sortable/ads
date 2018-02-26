@@ -2,28 +2,28 @@
 
 ## Standard Ads
 
-via HTML or via React
+[Basic Example](//jsfiddle.net/vqv8r7np/6/embedded/html,result/ ':include :type=iframe width=100% height=700 allowpaymentrequest allowfullscreen frameborder=0')
 
 ## Refresh Ads by Time
 
-via HTML or via React
+TODO: jsfiddle example
 
 ## Refresh Ads by User Interaction
 
-via HTML or via React
+TODO: jsfiddle example
 
 ## Infinite Scrolling Ads
 
-via HTML or via React
+TODO: jsfiddle example
 
 ## GPT & Prebid Plugins
 
-via HTML or via React
+TODO: jsfiddle example
 
 ## GPT & Sortable Plugins
 
-via HTML or via React
+TODO: jsfiddle example
 
 ## GPT & Prebid & Sortable Plugins
 
-via HTML or via React
+TODO: jsfiddle example
