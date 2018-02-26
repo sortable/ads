@@ -30,39 +30,19 @@ console.log(sortableads.version); // => "0.0.5"
 
 ## `get`
 
-Get the value associated with given key. The return value will be undefined if the key doesn't exist. This generic map is used to configure Ads Manager in an extensible way.
+Get the value associated with given key. The return value will be undefined if the key doesn't exist.
 
-**Valid Keys**:
-
-| Key Name        | Value Type |
-|-----------------|------------|
-| bidderTimeout   | number     |
-| throttleTimeout | number     |
-
-**Params**:
-
-| Param | Scope    | Type   | Description       |
-|-------|----------|--------|-------------------|
-| key   | Required | string | key of config map |
-
-```js
-sortableads.get('bidderTimeout');
-```
+| Usage                              | Return Type | Descreiption                           |
+|------------------------------------|-------------|----------------------------------------|
+| `sortableads.get('bidderTimeout')` | number      | Get timeout setting for header bidding |
 
 ## `set`
 
-Associate given value with given key. As with `get`, only valid keys and their corresponding return types shown above should be used.
+Associate given value with given key.
 
-**Params**:
-
-| Param | Scope    | Type   | Description       |
-|-------|----------|--------|-------------------|
-| key   | Required | string | key of config map |
-| val   | Required | object | value for the key |
-
-```js
-sortableads.set('bidderTimeout', 1500);
-```
+| Usage                                    | Value Type | Descreiption                           |
+|------------------------------------------|------------|----------------------------------------|
+| `sortableads.get('bidderTimeout', 1500)` | number     | Set timeout setting for header bidding |
 
 ## `use`
 
@@ -143,7 +123,7 @@ Used to declare a new pageview for the SPA use case.
 
 ## `start`
 
-Ad requests to header bidders will be queued until `start` is called.
+Ad requests will be queued until `start` is called.
 
 ## `addEventListener`
 
