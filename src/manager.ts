@@ -30,10 +30,10 @@ export default class Manager extends EventEmitter<SortableAds.EventMap> {
   /**
    * Set setting by name and value.
    */
-  public set<K extends keyof SortableAds.Setting>(name: K, updatedValue: SortableAds.Setting[K]): void {
-    const previousValue = this.setting[name];
-    this.setting[name] = updatedValue;
-    this.emitEvent('updateSetting', { name, previousValue, updatedValue });
+  public set<K extends keyof SortableAds.Setting>(name: K, newValue: SortableAds.Setting[K]): void {
+    const oldValue = this.setting[name];
+    this.setting[name] = newValue;
+    this.emitEvent('updateSetting', { name, oldValue, newValue });
   }
 
   public defineAds(adConfigs: SortableAds.AdConfig | SortableAds.AdConfig[]): void {

@@ -83,8 +83,8 @@ declare namespace SortableAds {
 
   interface UpdateEvent<T, K extends keyof T> {
     name: K;
-    previousValue: T[K];
-    updatedValue: T[K];
+    oldValue: T[K];
+    newValue: T[K];
   }
 
   interface EventMap {
