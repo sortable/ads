@@ -45,7 +45,7 @@ sortableads.push(function() {
 });
 ```
 
-## Request Ads by Rendering Component
+## Request Ads by Rendering Ad Component
 
 > * Use `Ad` or `TimeRefreshAd` component to load ad.
 > * If only ad server plugin is used, it will send request to
