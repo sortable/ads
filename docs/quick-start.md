@@ -16,9 +16,6 @@
     <script async src="//tags-cdn.deployads.com/a/sortable-demo-only.com.js"></script>
     <script> var sortableads = sortableads || []; </script>
   </head>
-  <body>
-    ...
-  </body>
 </html>
 ```
 
@@ -47,13 +44,15 @@ sortableads.push(function() {
 });
 ```
 
-## Request Ads
+## Request Ads by Element ID
 
 > * Send requests when element is ready.
 > * If only ad server plugin is used, it will send request to
 > ad server immediately.
 > * If both header bidder and ad server plugin are used, it will send request for
-> header bidding, wait all responses (or until it's timeout), and then send request to ad server.
+> header bidding, wait all responses and then send request to ad server.
+
+!> The ad must be defined via `sortableads.defineAds` before requesting.
 
 ```html
 <div id="div-id-1">
@@ -65,20 +64,25 @@ sortableads.push(function() {
 </div>
 ```
 
-## Full Examples
+## Basic Example
 
-Check out [HERE](https://github.com/sortable/ads/tree/master/examples).
+> * Use GPT plugin
+> * No refresh
 
-## Live Examples
+[](//jsfiddle.net/vqv8r7np/103/embedded/html,result/?sortableads_debug=true ':include :type=iframe width=100% height=700 allowpaymentrequest allowfullscreen frameborder=0')
 
-#### Basic Example
+## Time Refresh Example
 
-[Basic Example](//jsfiddle.net/vqv8r7np/9/embedded/html,result/?sortableads_debug=true ':include :type=iframe width=100% height=700 allowpaymentrequest allowfullscreen frameborder=0')
+> * Use GPT plugin
+> * Use Prebid plugin
+> * Refresh every 30 seconds
 
-#### Refresh Ads by Time
+[](//jsfiddle.net/vqv8r7np/148/embedded/html,result/ ':include :type=iframe width=100% height=700 allowpaymentrequest allowfullscreen frameborder=0')
 
-[Time Refresh Example](//jsfiddle.net/vqv8r7np/28/embedded/html,result/ ':include :type=iframe width=100% height=700 allowpaymentrequest allowfullscreen frameborder=0')
+## User Interaction Refresh Example
 
-#### Refresh Ads by User Interaction
+> * Use GPT plugin
+> * Use Prebid plugin
+> * Refresh by clicking button
 
-[User Interaction Refresh Example](//jsfiddle.net/vqv8r7np/38/embedded/html,result/ ':include :type=iframe width=100% height=700 allowpaymentrequest allowfullscreen frameborder=0')
+[](//jsfiddle.net/vqv8r7np/155/embedded/html,result/ ':include :type=iframe width=100% height=700 allowpaymentrequest allowfullscreen frameborder=0')
