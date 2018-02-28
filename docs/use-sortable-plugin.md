@@ -1,14 +1,26 @@
 # Use Sortable Plugin
 
-## Instruction for Sortable TODO 1
+### Add CDN Link for Sortable Service Script
 
-TODO
+```html
+<html>
+  <head>
+    <script async src="//tags-cdn.deployads.com/a/<SITE_NAME>.js"></script>
+  </head>
+</html>
+```
 
-## Instruction for Sortable TODO 2
+### Enable Sortable Plugin
 
-TODO
+```js
+sortableads.push(function() {
+  // configuration ...
+  sortableads.useSortableForGPTAsync();
 
-## Instruction for Sortable TODO 3
+  // ...
+});
+```
 
-TODO
+### Sortable Plugin Example
 
+[GPT and Sortable Example](//jsfiddle.net/vqv8r7np/35/embedded/html,result/ ':include :type=iframe width=100% height=700 allowpaymentrequest allowfullscreen frameborder=0')

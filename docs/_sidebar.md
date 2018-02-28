@@ -1,9 +1,8 @@
 
 * Getting Started
 
-  * [Core Concepts](core-concepts.md)
   * [Quick Start](quick-start.md)
-  * [Examples](examples.md)
+  * [Quick Start for React](quick-start-for-react.md)
 
 * Guide
   * [Plugin System](plugin-system.md)
