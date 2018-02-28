@@ -1,7 +1,7 @@
 
 # Write an Ad Server Plugin
 
-TODO
+---
 
 ## Ad Server Plugin Properties
 

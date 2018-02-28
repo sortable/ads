@@ -1,5 +1,7 @@
 # Ads Manager @sortable/ads
 
+---
+
 ## `push`
 
 Push the command functionn to global queue and execute it when API is ready.

@@ -1,5 +1,23 @@
 # Use GPT Plugin
 
+---
+
+## Installation & Initialization
+
+> * Add GPT script link to HTML page.
+> * Initialize `googletag` global variable.
+
+```html
+<html>
+  <head>
+    <script async src="https://www.googletagservices.com/tag/js/gpt.js"></script>
+    <script>
+      var googletag = googletag || {};
+      googletag.cmd = googletag.cmd || [];
+    </script>
+  </head>
+</html>
+```
 To use the GPT async plugin:
 
 1. `sortableads.defineAds(`[AdConfig](#plugin-configuration)`)`

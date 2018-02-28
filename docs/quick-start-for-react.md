@@ -1,6 +1,9 @@
 # Quick Start for React
 
+---
+
 !> This guide is only availiable for selected Sortable's customer at the moment.
+
 
 ## Installation
 

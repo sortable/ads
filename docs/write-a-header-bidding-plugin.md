@@ -1,5 +1,7 @@
 # Write a Header Bidding Plugin
 
+---
+
 The provided prebid-for-gpt-async plugin is a good example to follow. In general, the steps to write a plugin are:
 
 1. Create a Javascript object that implements the following properties:

@@ -1,18 +1,16 @@
 # Commen Issues
 
-## Using Free CDN in Production
-
-It's mostly used for demo, example and development.
+---
 
 ## Missing External Scripts
 
-Ensure that any required external scripts are included in the HTML. For example, the GPT library should be loaded in the head of the document. Many libraries will provide a global command queue to enqueue callbacks to run when they are loaded successfully.
+!> Ensure that any required external scripts are included in the HTML. For example the GPT library should be loaded in the head of the document. Many libraries will provide a global command queue to enqueue callbacks to run when they are loaded successfully.
 
 ```html
 <html>
   <head>
     <!-- Make sure you include GPT before using GPT Plugin ! -->
-    <script src="https://www.googletagservices.com/tag/js/gpt.js" async/>
+    <script async src="https://www.googletagservices.com/tag/js/gpt.js"><script>
   </head>
 </html>
 ```
@@ -50,7 +48,7 @@ Ensure that API calls which interact with DOM elements are run after such elemen
 <html>
   <head>
     <!-- This is async! -->
-    <script src="sortableads.min.js" async/>
+    <script src="sortableads.min.js" async></script>
     <script>
       // define sortableads if necessary, and only perform API calls within callbacks
       var sortableads = sortableads || [];

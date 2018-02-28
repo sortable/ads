@@ -1,7 +1,7 @@
 
 # Sortable Ads Manager
 
-> Making ads integration easy.
+---
 
 ## Motivation
 

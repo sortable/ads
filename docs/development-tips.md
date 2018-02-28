@@ -1,5 +1,7 @@
 # Development Tips
 
+---
+
 ## Turn On Debug Flag
 
 You can pass in query parameters to enable debugging for Ads Manager.
