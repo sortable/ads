@@ -4,10 +4,9 @@
 
 !> This guide is only availiable for selected Sortable's customer at the moment.
 
-
 ## Installation
 
-> * Run `npm install @sortable/ads-react` to install ads manager's React package.
+> * Run `npm install @sortable/ads-react --save` to install ads manager's React package.
 > * Add Sortable provided CDN link to HTML page.
 
 ```html
@@ -16,9 +15,6 @@
     <!-- NOTE: replace following link with Sortable provided CDN link -->
     <script async src="//tags-cdn.deployads.com/a/sortable-demo-only.com.js"></script>
   </head>
-  <body>
-    ...
-  </body>
 </html>
 ```
 
@@ -49,13 +45,13 @@ sortableads.push(function() {
 });
 ```
 
-## Request Ads
+## Request Ads by Rendering Ad Component
 
-> * Use `Ad` component to load ad.
+> * Use `Ad` or `TimeRefreshAd` component to load ad.
 > * If only ad server plugin is used, it will send request to
 > ad server immediately.
 > * If both header bidder and ad server plugin are used, it will send request for
-> header bidding, wait all responses (or until it's timeout), and then send request to ad server.
+> header bidding, wait all responses and then send request to ad server.
 
 ```jsx
 import React from 'react';
@@ -73,12 +69,29 @@ class App extends React.Component {
 ReactDom.render(<App />, document.getElementById('root'));
 ```
 
-## Full Example
+## Basic Example
+
+> * Use GPT plugin
+> * No refresh
+
+[](//jsfiddle.net/vqv8r7np/118/embedded/js,html,result/ ':include :type=iframe width=100% height=700 allowpaymentrequest allowfullscreen frameborder=0')
+
+## Time Refresh Example
+
+> * Use GPT Plugin
+> * Use Prebid Plugin
+> * Refresh every 30 seconds
+
+[](//jsfiddle.net/vqv8r7np/143/embedded/js,html,result/ ':include :type=iframe width=100% height=700 allowpaymentrequest allowfullscreen frameborder=0')
+
+## User Interaction Refresh Example
+
+> * Use GPT Plugin
+> * Use Prebid Plugin
+> * Refresh by clicking button
+
+[](//jsfiddle.net/vqv8r7np/139/embedded/js,html,result/ ':include :type=iframe width=100% height=700 allowpaymentrequest allowfullscreen frameborder=0')
+
+## Webpack Example
 
 Check out [HERE](https://github.com/sortable/ads-react/tree/master/example) for a full example using Webpack.
-
-## Live Examples
-
-#### Basic Example
-
-[Basic Example](//jsfiddle.net/vqv8r7np/97/embedded/js,html,result/ ':include :type=iframe width=100% height=700 allowpaymentrequest allowfullscreen frameborder=0')
