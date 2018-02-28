@@ -64,7 +64,7 @@ sortableads.push(function() {
 
 [](//jsfiddle.net/vqv8r7np/176/embedded/html,result/ ':include :type=iframe width=100% height=700 allowpaymentrequest allowfullscreen frameborder=0')
 
-## Prebid Properties
+## Prebid Properties Example
 
 These properties are based on [Prebid Adunit Reference](http://prebid.org/dev-docs/adunit-reference.html).
 
@@ -89,39 +89,31 @@ sortableads.push([{
 
 ## Prebid Properties Reference
 
-`sizes`
+### `sizes`
 * **Scope**: optional
 * **Type**: Array[Number] or Array[Array[Number]]
 * **Description**: The width and height for a specific slot.
-* **Note**: This will override AdConfig.sizes. Prebid will default to AdConfig.sizes if this is missing.
+* **Note**: This will override parent's `sizes` for prebid plugin. Prebid will default to parent's `sizes` if this is missing.
 
----
-
-`bids`
+### `bids`
 * **Scope**: required
 * **Type**: Array[Object]
 * **Description**: Bid objects for a given ad unit.
 * **Prebid Reference**: [`adUnit.bids`](http://prebid.org/dev-docs/adunit-reference.html#adunitbids)
 
----
-
-`mediaTypes`
+### `mediaTypes`
 * **Scope**: optional
 * **Type**: Object
 * **Description**: Allowed media types for the ad.
 * **Prebid Reference**: [`adUnit.mediaTypes`](http://prebid.org/dev-docs/adunit-reference.html#adunitmediatypes)
 
----
-
-`labelAny`
+### `labelAny`
 * **Scope**: optional
 * **Type**: Array[string]
 * **Description**: Labels for conditional ad units. The condition passes if any label matches.
 * **Prebid Reference**: [`adUnit`](http://prebid.org/dev-docs/adunit-reference.html#adunit)
 
----
-
-`labelAll`
+### `labelAll`
 * **Scope**: optional
 * **Type**: Array[string]
 * **Description**: Labels for conditional ad units. The condition passes if all labels match.

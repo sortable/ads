@@ -64,7 +64,7 @@ sortableads.push(function() {
 [enableSingleRequest]: https://developers.google.com/doubleclick-gpt/reference#googletag.PubAdsService_enableSingleRequest
 [enableServices]: https://developers.google.com/doubleclick-gpt/reference#googletag.enableServices
 
-## GPT Properties
+## GPT Properties Example
 
 These properties are based on [googletag.Slot](https://developers.google.com/doubleclick-gpt/reference#googletag.Slot).
 
@@ -110,89 +110,68 @@ sortableads.defineAds([{
 
 ## GPT Properties Reference
 
-
-`adUnitPath`
+### `adUnitPath`
 * **Scope**: required
 * **Type**: string
 * **Description**: The ad unit path to use to define the slot.
 * **DFP Method**: [`googletag.Slot.defineSlot`](https://developers.google.com/doubleclick-gpt/reference#googletag.defineSlot)
 
----
-
-`sizes`
+### `sizes`
 * **Scope**: optional
 * **Type**: [`googletag.GeneralSize`](https://developers.google.com/doubleclick-gpt/reference#googletag.GeneralSize)
 * **Description**: The width and height for a specific slot.
 * **Note**: This will override AdConfig.sizes. GPT will default to AdConfig.sizes if this is missing.
 * **DFP Method**: [`googletag.Slot.defineSlot`](https://developers.google.com/doubleclick-gpt/reference#googletag.defineSlot)
 
----
-
-`sizeMapping`
+### `sizeMapping`
 * **Scope**: optional
 * **Type**: Array of `{ viewport, sizes }` object
 * **Description**: Mapping between viewport size and ad sizes.
 * **DFP Method**: [`googletag.Slot.defineSizeMapping`](https://developers.google.com/doubleclick-gpt/reference#googletag.Slot_defineSizeMapping)
 
----
-
-`targeting`
+### `targeting`
 * **Scope**: optional
 * **Type**: Object
 * **Description**: Custom targeting key-value pairs to set for a specific slot.
 * **DFP Method**: [`googletag.Slot.setTargeting`](https://developers.google.com/doubleclick-gpt/reference#googletag.Slot_setTargeting)
 
----
-
-`attributes`
+### `attributes`
 * **Scope**: optional
 * **Type**: Object
 * **Description**: AdSense attribute key-value pairs that apply to all slots.
 * **DFP Method**: [`googletag.Slot.set`](https://developers.google.com/doubleclick-gpt/reference#googletag.Slot_set)
 
----
-
-`categoryExclusion`
+### `categoryExclusion`
 * **Scope**: optional
 * **Type**: string
 * **Description**: Category to exclude for a specific slot.
 * **DFP Method**: [`googletag.Slot.setCategoryExclusion`](https://developers.google.com/doubleclick-gpt/reference#googletag.Slot_setCategoryExclusion)
 
----
-
-`clickUrl`
+### `clickUrl`
 * **Scope**: optional
 * **Type**: string
 * **Description**: The url to open when the ad is clicked.
 * **DFP Method**: [`googletag.Slot.setClickUrl`](https://developers.google.com/doubleclick-gpt/reference#googletag.Slot_setClickUrl)
 
----
-
-`collapseEmptyDiv`
+### `collapseEmptyDiv`
 * **Scope**: optional
 * **Type**: boolean
 * **Description**: Flag to enable collapsing empty divs.
 * **DFP Method**: [`googletag.Slot.setCollapseEmptyDiv`](https://developers.google.com/doubleclick-gpt/reference#googletag.Slot_setCollapseEmptyDiv)
 
----
-
-`collapseBeforeAdFetch`
+### `collapseBeforeAdFetch`
 * **Scope**: optional
 * **Type**: boolean
 * **Description**: Option to collapse empty divs before fetching ads. Used with collapseEmptyDiv.
 * **DFP Method**: [`googletag.Slot.setCollapseEmptyDiv`](https://developers.google.com/doubleclick-gpt/reference#googletag.Slot_setCollapseEmptyDiv)
 
----
-
-`forceSafeFrame`
+### `forceSafeFrame`
 * **Scope**: optional
 * **Type**: boolean
 * **Description**: Flag to set all ad slots to render with safe frames.
 * **DFP Method**: [`googletag.Slot.setForceSafeFrame`](https://developers.google.com/doubleclick-gpt/reference#googletag.Slot_setForceSafeFrame)
 
----
-
-`safeFrameConfig`
+### `safeFrameConfig`
 * **Scope**: optional
 * **Type**: [googletag.SafeFrameConfig](https://developers.google.com/doubleclick-gpt/reference#googletag.SafeFrameConfig)
 * **Description**: Set page level preferences for SafeFrame configuration.

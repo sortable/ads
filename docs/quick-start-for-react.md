@@ -31,7 +31,7 @@ sortableads.push(function() {
   // Step 1: load GPT plugin
   sortableads.useGPTAsync();
 
-  // Step 2: define ads with GPT configuration
+  // Step 2: define ads with GPT properties
   sortableads.defineAds([{
     elementId: 'div-id-1',
     sizes: [300, 250],

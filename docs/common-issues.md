@@ -15,83 +15,25 @@
 </html>
 ```
 
-## Script Loading: Async vs Sync
+## Using API Before Ready
 
-Ensure that API calls which interact with DOM elements are run after such elements are loaded. The easiest way to do this is to load the script synchronously before the end of the body tag, after the elements it depends on have been loaded. Alternatively, set-up code can be run in the head of the document, with each ad div containing an inline script to push a callback to requestAds on the sortableads queue. This will request the ad as each ad div finishes loading.
-
-!> The asynchronous method should always be used if possible.
-
-**Synchronous**
+!> Ensure API calls are wrapped by `sortableads.push` to wait until API is ready to use.
 
 ```html
 <html>
   <head>
-    ...
-  </head>
-  <body>
-    ...
-    <div id="ad-slot-1"></div>
-    <div id="ad-slot-2"></div>
-    <div id="ad-slot-3"></div>
-    <!-- This is not async! -->
-    <script src="sortableads.min.js"/>
-    <script>
-      // configure API, the divs above are loaded...
-    </script>
-  </body>
-</html>
-```
+    <script async src="//tags-cdn.deployads.com/a/sortable-demo-only.com.js"></script>
+    <script> var sortableads = sortableads || []; </script>
 
-**Asynchronous**
-
-```html
-<html>
-  <head>
-    <!-- This is async! -->
-    <script src="sortableads.min.js" async></script>
     <script>
-      // define sortableads if necessary, and only perform API calls within callbacks
-      var sortableads = sortableads || [];
+      // BAD: API may not be ready
+      sortableads.set('bidderTimeout', 1000);
+
+      // GOOD: this will queue command until API is ready
       sortableads.push(function () {
-        sortableads.set('bidderTimeout', 300);
+        sortableads.set('bidderTimeout', 1000);
       });
     </script>
   </head>
-  <body>
-    ...
-    <div id="ad-slot-1">
-      <script>
-        // callbacks should be used everywhere in the asynchronous scenario
-        sortableads.push(function () {
-          sortableads.requestAds(['ad-slot-1']);
-        });
-      </script>
-    </div>
-  </body>
 </html>
 ```
-
-## Custom Plugin Initialization
-
-Ensure that when defining `Plugin.initAsync(cb)`, the callback `cb` is called in an enqueued function to inform the Ads Manager API that the service is ready. If the callback is called too early, or not called at all, the HB will eventually timeout.
-
-```javascript
-var plugin = {
-  initAsync: function (cb) {
-    window.googletag = window.googletag || {};
-    window.googletag.cmd = window.googletag.cmd || [];
-    window.googletag.cmd.push(function () {
-      ... google related initialization ...
-      // CORRECT
-      cb(); // googletag is definitely initialized here!
-    });
-    // INCORRECT
-    cb(); // googletag may not be initialized here!
-  },
-  ...
-};
-```
-
-## Custom Plugin Bids Requesting
-
-Ensure that the `done` callback for `HeaderBiddingPlugin.requestBids` is called after receiving the bids. Not doing so will cause the HB to timeout, delaying the request to the ad server.

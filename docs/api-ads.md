@@ -7,7 +7,7 @@
 Push the command functionn to global queue and execute it when API is ready.
 
 ```js
-sortableads.push(function commandFunction() {
+sortableads.push(function() {
   // API is ready to use now.
 });
 ```
@@ -52,11 +52,10 @@ Takes a plugin and registers it for use with Ads Manager. The plugin consists of
 
 **Params**:
 
-| Param  | Scope    |Type    | Description                                  |
-|--------|----------|--------|----------------------------------------------|
-| plugin | Required | Object | See [plugin configuration] for more details. |
+| Param  | Scope    |Type    | Description                                             |
+|--------|----------|--------|---------------------------------------------------------|
+| plugin | Required | Object | See [plugin system](plugin-system.md) for more details. |
 
-[plugin configuration]: #plugin-configuration
 
 ## `useGPTAsync`
 
@@ -85,13 +84,13 @@ Use a provided out-of-the-box GPT-compatible Sortable HB plugin.
 
 ## `defineAds`
 
-Takes in a list of ad configs, one for each "ad unit". Each ad config contains all properties required for header bidders (ex. Prebid) and ad servers (ex. GPT) to define that ad unit for their request. See [Plugin Configuration](#plugin-configuration) for more information on how AdConfig is defined.
+Takes in a list of [unified object](plugin-system.md#use-one-unified-object-for-all-plugins), one for each "ad unit". Each object contains all properties required for header bidders (ex. Prebid) and ad servers (ex. GPT) to define that ad unit for their request. See [Plugin System](plugin-system.md) for more information on how object is defined.
 
 **Params**:
 
-| Param     | Scope    | Type            | Description                        |
-|-----------|----------|-----------------|------------------------------------|
-| adConfigs | Required | Array[AdConfig] | array of AdConfig for each ad unit |
+| Param   | Scope    | Type            | Description                        |
+|---------|----------|-----------------|------------------------------------|
+| objects | Required | Array[AdConfig] | array of AdConfig for each ad unit |
 
 ## `requestAds`
 
@@ -117,7 +116,7 @@ Command to destroy given ads.
 
 **Returns**: Array[string]
 
-Get all requested ad element ids.
+Get all requested but not destroyed ad element ids.
 
 ## `loadNewPage`
 
@@ -129,7 +128,7 @@ Ad requests will be queued until `start` is called.
 
 ## `addEventListener`
 
-Add an event listener for a specified type of event. See the [debugging](#how-to-debug) section for more information.
+Add an event listener for a specified type of event. See the [Turn On Debug Flag](development-tips.md#turn-on-debug-flag) section for more information.
 
 **Params**:
 

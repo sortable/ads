@@ -2,35 +2,42 @@
 
 ---
 
-The provided prebid-for-gpt-async plugin is a good example to follow. In general, the steps to write a plugin are:
+## Reference Implementation
 
-1. Create a Javascript object that implements the following properties:
-  * [name](#pluginname)
-  * [type](#plugintype)
-  * [initAsync](#plugininitasynccb)
-  * [defineUnit](#plugindefineunitadunit)
-  * [requestBids](#pluginrequestbidsunits-timeout-cb)
-  * [beforeRequestAdServer](#pluginbeforerequestadserverunits)
-2. Add the properties you require to the [AdConfig](#plugin-configuration) object.
-3. Pass your AdConfig to defineAds(config).
-4. Register your plugin with `sortableads.use(plugin)`.
+We have two built-in header bidding plugins:
+
+* [Prebid Plugin](https://github.com/sortable/ads/blob/master/src/plugin/prebid-for-gpt-async.ts)
+* [Sortable Plugin](https://github.com/sortable/ads/blob/master/src/plugin/sortable-for-gpt-async.ts)
+
+## Implementation Guide
+
+In general, the steps to write a plugin are:
+
+1. Create a plugin object that implements the following properties:
+  * [name](#name)
+  * [type](#type)
+  * [initAsync](#initasync)
+  * [defineUnit](#defineunit)
+  * [requestBids](#requestbids)
+  * [beforeRequestAdServer](#beforerequestadserver)
+2. Add the properties you require to the [unified object](plugin-system.md#use-one-unified-object-for-all-plugins).
+3. Register your plugin with `sortableads.use(plugin)`.
+4. Add any external script if needed.
 
 ## Header Bidding Plugin Properties
 
-A header bidder bids on your inventory. This plugin should implement how to send bid requests to the header bidder. The following are properties specific to Ad Server Plugins:
-
-### `plugin.name`
+### `name`
 * **Scope**: Required
 * **Type**: string
 * **Description**: The name of the service that this plugin enables.
 
-### `plugin.type`
+### `type`
 
 * **Scope**: Required
-* **Type**: string
-* **Description**: The type of the plugin is `'headerBidding'`, set by default.
+* **Type**: `"headerBidding"`
+* **Description**: Specify that the plugin is a header bidding plugin.
 
-### `plugin.initAsync(cb)`
+### `initAsync`
 
 * **Scope**: Required
 * **Type**: function
@@ -42,11 +49,34 @@ A header bidder bids on your inventory. This plugin should implement how to send
 |-------|----------|----------|-------------------------------|
 | cb    | Required | function | function invoked on callback. |
 
+
+* **Note**:
+
+!> Ensure the callback `cb` is called in an enqueued function to inform the Ads Manager API that the service is ready. If the callback is called too early, or not called at all, the HB will eventually timeout.
+
+```js
+var plugin = {
+  initAsync: function(cb) {
+    window.googletag = window.googletag || {};
+    window.googletag.cmd = window.googletag.cmd || [];
+    window.googletag.cmd.push(function () {
+      ... google related initialization ...
+      // CORRECT
+      cb(); // googletag is definitely initialized here!
+    });
+    // INCORRECT
+    cb(); // googletag may not be initialized here!
+  },
+  ...
+};
+```
+
 * **Example**:
 
 ```js
 let plugin = {
-  initAsync: (cb) => {
+  ...
+  initAsync: function(cb) {
     window.pbjs = window.pbjs || {};
     window.pbjs.que = window.pbjs.que || [];
     window.pbjs.que.push(() => {
@@ -58,7 +88,7 @@ let plugin = {
 };
 ```
 
-### `plugin.defineUnit(adUnit)`
+### `defineUnit`
 
 * **Scope**: Required
 * **Type**: function
@@ -66,9 +96,9 @@ let plugin = {
 * **Returns**: Object, representing an "ad unit"
 * **Params**:
 
-| Param     | Scope    | Type     | Description             |
-|-----------|----------|----------|-------------------------|
-| adConfig  | Required | function | ad unit [config] object |
+| Param   | Scope    | Type     | Description             |
+|---------|----------|----------|-------------------------|
+| object  | Required | function | ad unit [config] object |
 
 [config]: #plugin-configuration
 
@@ -77,10 +107,10 @@ let plugin = {
 ```js
 let plugin = {
   ...
-  defineUnit: adConfig => {
-    const GPTConfig = adConfig.GPT;
-    const sizes = GPTConfig.sizes || adConfig.sizes;
-    const slot = googletag.defineSlot(GPTConfig.adUnitPath, sizes, GPTConfig.elementId);
+  defineUnit: function(object) {
+    const GPTProperties = object.GPT;
+    const sizes = GPTProperties.sizes || object.sizes;
+    const slot = googletag.defineSlot(GPTProperties.adUnitPath, sizes, object.elementId);
     slot.addService(googletag.pubads());
     return slot;
   },
@@ -88,7 +118,7 @@ let plugin = {
 };
 ```
 
-### `plugin.requestBids(units, timeout, cb)`
+### `requestBids`
 
 * **Scope**: Required
 * **Type**: function
@@ -102,17 +132,21 @@ let plugin = {
 | timeout | Required | number        | timeout in ms to wait for header bidder               |
 | cb      | Required | function      | function which should be called when request finished |
 
+* **Note**:
+
+!> Ensure that the `done` callback for `HeaderBiddingPlugin.requestBids` is called after receiving the bids. Not doing so will cause the HB to timeout, delaying the request to the ad server.
+
 * **Example**:
 
 ```js
 let plugin = {
   ...
-  requestBids: function (adUnits, timeout, done) {
+  requestBids: function(units, timeout, cb) {
     pbjs.requestBids({
       timeout,
       adUnits,
-      bidsBackHandler: function () {
-        done();
+      bidsBackHandler: function() {
+        cb();
       },
     });
   },
@@ -120,7 +154,9 @@ let plugin = {
 };
 ```
 
-### `plugin.beforeRequestAdServer(units)`
+
+
+### `beforeRequestAdServer`
 
 * **Scope**: Required
 * **Type**: function
@@ -137,14 +173,14 @@ let plugin = {
 ```js
 let plugin = {
   ...
-  beforeRequestAdServer: adUnits => {
-    pbjs.setTargetingForGPTAsync(adUnits);
+  beforeRequestAdServer: function(units) {
+    pbjs.setTargetingForGPTAsync(units);
   },
   ...
 };
 ```
 
-### `plugin.destroyUnits(units)`
+### `destroyUnits`
 
 * **Scope**: Optional
 * **Type**: function
@@ -156,7 +192,7 @@ let plugin = {
 |-------|----------|---------------|-----------------------------------------------|
 | units | Required | Array[Object] | array of ad units as returned from defineUnit |
 
-### `plugin.loadNewPage()`
+### `loadNewPage`
 
 * **Scope**: Optional
 * **Type**: function
