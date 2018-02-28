@@ -7,6 +7,8 @@
 
 Plugins are what Ads Manager uses to communicate with header bidders and ad servers. All interaction with the external services that Ads Manager connects to should be encapsulated within a Plugin. There are 2 types of plugins: one for header bidding, and one for ad servers. These plugins expose slightly different interfaces.
 
+?> You need to load **one** ad server plugin to make ads manager work. You could have **zero** or **more** header bidding plugins to support header bidding. If no header bidding plugin is enabled, there is no delay from header bidding during requesting.
+
 ## Built-in Plugins
 
 Ads Manager comes with a few ready to use plugins:
@@ -27,12 +29,14 @@ We use one unified object to ad properties for all plugins. The Object only has 
 
 * `elementId` (required) - The unique string ID for a DOM element on a page where the ad should go.
 
-* `sizes` (optional) - The acceptable sizes of the ad to be returned.
+* `sizes` (optional) - The acceptable sizes of the ad to be returned. For example,
+  * `[300, 250]`
+  * `[[300, 250], [300,600]]`
 
 ```js
 const unifiedObject = {
   elementId: 'div-id-1', // required
-  sizes: [300, 250],     // optional default sizes for plugins
+  sizes: [300, 250],     // optional, default sizes for plugins
   GPT: {
     // GPT's properties
   },
