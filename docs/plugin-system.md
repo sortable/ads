@@ -1,16 +1,20 @@
 
-## Plugin Usage
+# Plugin System
+
+---
+
+## Introduction
 
 Plugins are what Ads Manager uses to communicate with header bidders and ad servers. Ads Manager comes with a ready to use GPT Async plugin for an ad server integration, and a Prebid plugin for a header bidder integration.
 
 TODO: may add a diagram ?
 
-### Plugin Documentation
+## Plugin Documentation
 
 All interaction with the external services that Ads Manager connects to should be encapsulated within a Plugin. There are 2 types of plugins: one for header bidding, and one for ad servers. These plugins expose slightly different interfaces.
 
 
-### Plugin Configuration
+## Plugin Configuration
 
 The `AdConfig` is a configuration object for one ad unit, which is associated with an element on the page by its ID. The object contains an interface for each built-in header bidder and ad server plugin provided. When you write your own plugin for another service, you can add the ad unit properties you require for that service as part of its interface in the AdConfig.
 
@@ -30,7 +34,7 @@ sizes: [[300, 250], [300, 600]]
 
 The other parameters you can set in the AdConfig are passed to specific plugins. For example, to configure the provided async GPT plugin, you would put all the parameters it needs in the GPT object. All the interfaces are **optional**, as you can choose which header bidding services you would like to send requests to on a per ad-unit basis.
 
-### GPT Plugin Configuration
+## GPT Plugin Configuration
 
 The interface for the provided async GPT plugin. Most parameters listed are arguments passed to methods in GPT under [googletag.Slot](https://developers.google.com/doubleclick-gpt/reference#googletag.Slot). To minimize duplication, refer to GPT documentation for more detail on GPT specific API calls. Additional comments refer to special behaviour for Ads Manager.
 

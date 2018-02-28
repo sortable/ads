@@ -1,5 +1,7 @@
 # Use Prebid Plugin
 
+---
+
 To use the GPT async plugin:
 
 1. `sortableads.defineAds(`[AdConfig](#plugin-configuration)`)`

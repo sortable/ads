@@ -1,5 +1,7 @@
 # FAQ
 
+---
+
 ## How to change header bidding timeout ?
 
 ```js

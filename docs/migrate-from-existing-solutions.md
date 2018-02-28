@@ -1,5 +1,7 @@
 # Migrate from Existing Solutions
 
+---
+
 ## Migrate from GPT Sample Code
 
 Check out [this](https://github.com/sortable/ads/pull/38) for step-by-step

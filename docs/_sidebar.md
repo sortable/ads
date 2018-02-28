@@ -22,3 +22,7 @@
 
   * [Ads Manager @sortable/ads](api-ads.md)
   * [React Support @sortable/ads-react](api-ads-react.md)
+
+* Feedback
+
+  * [Contact Us](contact-us.md)
