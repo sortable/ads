@@ -2,27 +2,36 @@
 
 ---
 
-### Add CDN Link for Sortable Service Script
+?> [sortable.com](https://sortable.com) provides monetization and analytics solutions. [Contact us](https://sortable.com/contact-us/) if you are interested.
 
-```html
-<html>
-  <head>
-    <script async src="//tags-cdn.deployads.com/a/<SITE_NAME>.js"></script>
-  </head>
-</html>
-```
+## Load Plugin in Configuration
 
-### Enable Sortable Plugin
+> * Step 0: setup GPT plugin
+> * Step 1: load Sortable plugin via `sortableads.useSortableForGPTAsync()`
+
 
 ```js
 sortableads.push(function() {
-  // configuration ...
+  sortableads.useGPTAsync();
+
+  // Step 1: load Sortable plugin
   sortableads.useSortableForGPTAsync();
 
-  // ...
+  sortableads.defineAds([{
+    elementId: "div-gpt-ad-123456789-0",
+    sizes: [728, 90],
+    GPT: {
+      adUnitPath: "/19968336/header-bid-tag-0",
+      targeting: {
+        "interests": ["sports", "music", "movies"]
+      }
+    }
+  }]);
+
+  sortableads.start();
 });
 ```
 
-### Sortable Plugin Example
+## Full Example
 
-[GPT and Sortable Example](//jsfiddle.net/vqv8r7np/35/embedded/html,result/ ':include :type=iframe width=100% height=700 allowpaymentrequest allowfullscreen frameborder=0')
+[](//jsfiddle.net/vqv8r7np/166/embedded/html,result/?sortableads_debug=true ':include :type=iframe width=100% height=700 allowpaymentrequest allowfullscreen frameborder=0')
