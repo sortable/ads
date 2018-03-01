@@ -3,7 +3,7 @@
 
 ## Sortable Ads Manager
 
-The ads manager is a utility library that a publisher can embed on a page to help manage multiple header bidder frameworks on the same page.
+Tha Ads Manager is a utility library to make ads integration easy.
 
 The main goals of this library are to:
 
@@ -13,17 +13,15 @@ The main goals of this library are to:
 
 In short, this library will handle the administrative work of managing the life cycle of your ad units, so that requests are made properly.
 
-We have also provided an example of using the Ad Manager API in a React component [here](https://github.com/sortable/react).
+### Usage
 
-### Usage (For consumers)
+Detailed guide, API reference and examples are available at [dev.sortable.com/ads](http://dev.sortable.com/ads).
 
-Detailed guide, API reference and examples are available at [http://dev.sortable.com/ads](http://dev.sortable.com/ads).
+### Related Repositories
 
-### Build (For contributors)
+* [@sortable/ads-react](https://github.com/sortable/ads-react): React support for Ads Manager
 
-NOTE: As the project is in its early stages, we are not accepting PRs at the moment. However, you are welcome to open issues or feature requests.
-
-To build, you must have NodeJS and NPM installed on your environment.
+### Build
 
 First, run `npm install` to install all the required dependencies.
 
@@ -34,6 +32,10 @@ Afterwards, the available commands to run are:
 * `npm run serve` - build and serve from root folder at localhost:9000/
 * `npm run test` - run tests with MochaJS
 * `npm run docs` - serve docs locally at localhost:3000
+
+### Contribution
+
+As the project is in its early stages, we are not accepting PRs at the moment. However, you are welcome to open issues or feature requests.
 
 ### License
 
