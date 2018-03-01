@@ -1,43 +1,61 @@
 <html>
 <head>
+<!-- This CDN file is for demo only. Do not use it in production. -->
+<script async="async" src="https://cdn.jsdelivr.net/npm/@sortable/ads/dist/sortableads.min.js">
+</script>
 <script async="async" src="https://www.googletagservices.com/tag/js/gpt.js">
 </script>
 <script>
+  var sortableads = sortableads || [];
   var googletag = googletag || {};
   googletag.cmd = googletag.cmd || [];
 </script>
 <script>
-  googletag.cmd.push(function() {
-    googletag.pubads().set("adsense_background_color", "FFFFFF");
-  });
-</script>
-<script>
-  googletag.cmd.push(function() {
-    googletag.defineSlot("/19968336/header-bid-tag-0", [728, 90], "div-gpt-ad-123456789-0")
-      .addService(googletag.pubads())
-      .setTargeting("interests", ["sports", "music", "movies"]);
-    googletag.defineSlot("/19968336/header-bid-tag1", [[468, 60], [728, 90], [300, 250]], "div-gpt-ad-123456789-1")
-      .addService(googletag.pubads())
-      .setTargeting("gender", "male")
-      .setTargeting("age", "20-30");
-    googletag.pubads().setTargeting("topic","basketball");
-    googletag.pubads().enableSingleRequest();
-    googletag.enableServices();
+  sortableads.push(function() {
+    googletag.cmd.push(function() {
+      googletag.pubads().set("adsense_background_color", "FFFFFF");
+      googletag.pubads().setTargeting("topic","basketball");
+    });
+    sortableads.useGPTAsync({
+      disableInitialLoad: false,
+      enableSingleRequest: true,
+    });
+    sortableads.defineAds([{
+      elementId: "div-gpt-ad-123456789-0",
+      sizes: [728, 90],
+      GPT: {
+        adUnitPath: "/19968336/header-bid-tag-0",
+        targeting: {
+          "interests": ["sports", "music", "movies"]
+        }
+      }
+    }, {
+      elementId: "div-gpt-ad-123456789-1",
+      sizes: [[468, 60], [728, 90], [300, 250]],
+      GPT: {
+        adUnitPath: "/19968336/header-bid-tag1",
+        targeting: {
+          "gender": "male",
+          "age": "20-30"
+        }
+      }
+    }]);
+    sortableads.start();
   });
 </script>
 </head>
 <body>
   <div id="div-gpt-ad-123456789-0" style="width: 728px; height: 90px">
     <script>
-      googletag.cmd.push(function() {
-        googletag.display("div-gpt-ad-123456789-0");
+      sortableads.push(function() {
+        sortableads.requestAds(["div-gpt-ad-123456789-0"]);
       });
     </script>
   </div>
     <div id="div-gpt-ad-123456789-1">
     <script>
-      googletag.cmd.push(function() {
-        googletag.display("div-gpt-ad-123456789-1");
+      sortableads.push(function() {
+        sortableads.requestAds(["div-gpt-ad-123456789-1"]);
       });
     </script>
   </div>
