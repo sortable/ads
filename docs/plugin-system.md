@@ -29,7 +29,7 @@ We use one unified object to ad properties for all plugins. The Object only has 
 
 * `elementId` (required) - The unique string ID for a DOM element on a page where the ad should go.
 
-* `sizes` (optional) - The acceptable sizes of the ad to be returned. For example,
+* `sizes` (optional) - The default sizes of the ad. Only accept following formats:
   * `[300, 250]`
   * `[[300, 250], [300,600]]`
 

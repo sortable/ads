@@ -52,7 +52,7 @@ In general, the steps to write a plugin are:
 
 * **Note**:
 
-!> Ensure the callback `cb` is called in an enqueued function to inform the Ads Manager API that the service is ready. If the callback is called too early, or not called at all, the HB will eventually timeout.
+!> Ensure `cb` is called in an enqueued function to inform the Ads Manager that the service is ready. If the callback is called too early, or not called at all, the HB will eventually timeout.
 
 ```js
 var plugin = {
@@ -134,7 +134,7 @@ let plugin = {
 
 * **Note**:
 
-!> Ensure that the `done` callback for `HeaderBiddingPlugin.requestBids` is called after receiving the bids. Not doing so will cause the HB to timeout, delaying the request to the ad server.
+!> Ensure that `cb` is called after receiving the bids. Not doing so will cause the HB to timeout, delaying the request to the ad server.
 
 * **Example**:
 
@@ -153,8 +153,6 @@ let plugin = {
   ...
 };
 ```
-
-
 
 ### `beforeRequestAdServer`
 
