@@ -17,6 +17,8 @@ In short, this library will handle the administrative work of managing the life 
 
 Detailed guide, API reference and examples are available at [dev.sortable.com/ads](http://dev.sortable.com/ads).
 
+> **NOTE**: You may need to **disable** AdBlock or similar extensions to view documentation properly due to domain "sortable.com" or repo name "ads".
+
 ### Related Repositories
 
 * [@sortable/ads-react](https://github.com/sortable/ads-react): React support for Ads Manager
