@@ -50,28 +50,9 @@ In general, the steps to write a plugin are:
 | cb    | Required | function | function invoked on callback. |
 
 
-* **Note**:
+* **Example**:
 
 !> Ensure `cb` is called in an enqueued function to inform the Ads Manager that the service is ready. If the callback is called too early, or not called at all, the HB will eventually timeout.
-
-```js
-var plugin = {
-  initAsync: function(cb) {
-    window.googletag = window.googletag || {};
-    window.googletag.cmd = window.googletag.cmd || [];
-    window.googletag.cmd.push(function () {
-      ... google related initialization ...
-      // CORRECT
-      cb(); // googletag is definitely initialized here!
-    });
-    // INCORRECT
-    cb(); // googletag may not be initialized here!
-  },
-  ...
-};
-```
-
-* **Example**:
 
 ```js
 let plugin = {
@@ -81,8 +62,11 @@ let plugin = {
     window.pbjs.que = window.pbjs.que || [];
     window.pbjs.que.push(() => {
       ... pbjs related initialization ...
-      cb();
+      // CORRECT
+      cb(); // googletag is definitely initialized here!
     });
+    // INCORRECT
+    cb(); // pbjs may not be initialized here!
   },
   ...
 };
@@ -96,11 +80,11 @@ let plugin = {
 * **Returns**: Object, representing an "ad unit"
 * **Params**:
 
-| Param   | Scope    | Type     | Description             |
-|---------|----------|----------|-------------------------|
-| object  | Required | function | ad unit [config] object |
+| Param   | Scope    | Type     | Description      |
+|---------|----------|----------|------------------|
+| object  | Required | function | [unified object] |
 
-[config]: #plugin-configuration
+[unified object]: plugin-system.md#use-one-unified-object-for-all-plugins
 
 * **Example**:
 
@@ -108,11 +92,16 @@ let plugin = {
 let plugin = {
   ...
   defineUnit: function(object) {
-    const GPTProperties = object.GPT;
-    const sizes = GPTProperties.sizes || object.sizes;
-    const slot = googletag.defineSlot(GPTProperties.adUnitPath, sizes, object.elementId);
-    slot.addService(googletag.pubads());
-    return slot;
+    const prebidProperties = object.prebid;
+    if (!prebid) {
+      return;
+    }
+    // create a prebid ad unit
+    return {
+      sizes: object.sizes, // use object.sizes if prebidProperties.sizes is missing
+      ...prebidProperties,
+      code: object.elementId
+    };
   },
   ...
 };
@@ -132,11 +121,9 @@ let plugin = {
 | timeout | Required | number        | timeout in ms to wait for header bidder               |
 | cb      | Required | function      | function which should be called when request finished |
 
-* **Note**:
+* **Example**:
 
 !> Ensure that `cb` is called after receiving the bids. Not doing so will cause the HB to timeout, delaying the request to the ad server.
-
-* **Example**:
 
 ```js
 let plugin = {
@@ -144,7 +131,7 @@ let plugin = {
   requestBids: function(units, timeout, cb) {
     pbjs.requestBids({
       timeout,
-      adUnits,
+      adUnits: units
       bidsBackHandler: function() {
         cb();
       },
@@ -172,7 +159,7 @@ let plugin = {
 let plugin = {
   ...
   beforeRequestAdServer: function(units) {
-    pbjs.setTargetingForGPTAsync(units);
+    pbjs.setTargetingForGPTAsync(units.map(unit => unit.code));
   },
   ...
 };
