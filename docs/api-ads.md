@@ -88,9 +88,9 @@ Takes in a list of [unified object](plugin-system.md#use-one-unified-object-for-
 
 **Params**:
 
-| Param   | Scope    | Type            | Description                        |
-|---------|----------|-----------------|------------------------------------|
-| objects | Required | Array[AdConfig] | array of AdConfig for each ad unit |
+| Param   | Scope    | Type          | Description                      |
+|---------|----------|---------------|----------------------------------|
+| objects | Required | Array[Object] | array of Object for each ad unit |
 
 ## `requestAds`
 
