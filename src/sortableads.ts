@@ -24,7 +24,7 @@ if (!sortableads.apiReady) {
   sortableads.removeEventListener = (x, y) => manager.removeEventListener(x, y);
 
   sortableads.apiReady = true;
-  sortableads.version = '0.0.5';
+  sortableads.version = '0.0.6';
 
   manager.tryCatch('debug', debug);
 

@@ -27,7 +27,7 @@ if (sortableads.apiReady) {
 The version of the Ads Manager API, which should match the NPM versioning.
 
 ```js
-console.log(sortableads.version); // => "0.0.5"
+console.log(sortableads.version); // => "0.0.6"
 ```
 
 ## `get`
