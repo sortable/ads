@@ -70,7 +70,7 @@ export default (option?: SortableAds.GPTPluginOption): SortableAds.AdServerPlugi
       const targeting = GPT.targeting;
       if (targeting) {
         for (const key of Object.keys(targeting)) {
-          slot.setTargeting(targeting[key]);
+          slot.setTargeting(key, targeting[key]);
         }
       }
 
