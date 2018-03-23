@@ -15,7 +15,7 @@ from googleads import dfp
 # Number of values to send per request, and timeout between requests
 # Play with these if you are being throttled. This will only
 # try to add missing values, and will skip existing ones.
-CHUNK_SIZE = 500
+CHUNK_SIZE = 20
 TIMEOUT = 0
 
 # Our keys are typically prefixed to avoid conflicts with existing keys.
@@ -56,14 +56,13 @@ def get_values_for_key(custom_targeting_service, key_id):
 
   # Retrieve a small amount of custom targeting values at a time, paging
   # through until all custom targeting values have been retrieved.
-  values = set()
+  values = []
 
   while True:
     response = custom_targeting_service.getCustomTargetingValuesByStatement(
         statement.ToStatement())
     if 'results' in response:
-      active_values = [x for x in response['results'] if x['status'] == 'ACTIVE']
-      values = values.union(set([v['name'] for v in active_values]))
+      values = values + [v['name'] for v in response['results'] if v['status'] == 'ACTIVE']
       statement.offset += statement.limit
     else:
       break
@@ -75,21 +74,27 @@ def get_values_for_key(custom_targeting_service, key_id):
 def throttled_create_values(custom_targeting_service, key_id, values, chunk_size):
   """ Send the keys to Google in chunks """
   chunk = []
-  for i, value in enumerate(values):
-    chunk.append({'name': str(value), 'customTargetingKeyId':key_id})
-    if (i+1)%chunk_size == 0 or i == len(values) - 1:
-      print i, "... adding more values to the key!"
-      custom_targeting_service.createCustomTargetingValues(chunk)
-      time.sleep(TIMEOUT)
-      chunk = []
+  for i in range(0, len(values), chunk_size):
+    j = min(i + chunk_size, len(values))
+    chunk = [{'name': v, 'customTargetingKeyId': key_id} for v in values[i:j]]
+
+    print "Adding values " + values[i] + " to " + values[j - 1]
+    custom_targeting_service.createCustomTargetingValues(chunk)
+    time.sleep(TIMEOUT)
 
 
-def upsert_values(custom_targeting_service, key_id, desired_values):
+def upsert_values(custom_targeting_service, key_id, values):
   """ Create the values on the existing key, if they aren't there yet """
   existing_values = get_values_for_key(custom_targeting_service, key_id)
-  missing_values = desired_values.difference(existing_values)
-  print "Need to create " + str(len(missing_values)) + " values"
-  throttled_create_values(custom_targeting_service, key_id, missing_values, CHUNK_SIZE)
+  
+  for v in existing_values:
+    try:
+      values.remove(v)
+    except ValueError:
+      print "Unexpected value " + v + " exists for this key. Continuing anyways."
+
+  print "Need to create " + str(len(values)) + " values"
+  throttled_create_values(custom_targeting_service, key_id, values, CHUNK_SIZE)
 
 
 def base36encode(number):
@@ -106,17 +111,16 @@ def base36encode(number):
 def add_sortable_keys():
   """ Adds all keys necessary for Sortable Analytics """
 
-  # Initialize client object.
+  # Initialize client object and custom targeting service.
   dfp_client = dfp.DfpClient.LoadFromStorage()
-
   service = dfp_client.GetService('CustomTargetingService', version='v201802')
 
-  r = [KEY_PREFIX + 'r', set(map(str, range(2048)))]
-  u = [KEY_PREFIX + 'u', set(map(base36encode, range(100000)))]
-  u2 = [KEY_PREFIX + 'u2', set(map(base36encode, range(100000)))]
-  u3 = [KEY_PREFIX + 'u3', set(map(base36encode, range(100000)))]
-  u4 = [KEY_PREFIX + 'u4', set(map(base36encode, range(100000)))]
-  u5 = [KEY_PREFIX + 'u5', set(map(base36encode, range(100000)))]
+  r = [KEY_PREFIX + 'r_test', [str(v) for v in range(200)]]
+  u = [KEY_PREFIX + 'u', [base36encode(v) for v in range(100000)]]
+  u2 = [KEY_PREFIX + 'u2', [base36encode(v) for v in range(100000)]]
+  u3 = [KEY_PREFIX + 'u3', [base36encode(v) for v in range(100000)]]
+  u4 = [KEY_PREFIX + 'u4', [base36encode(v) for v in range(100000)]]
+  u5 = [KEY_PREFIX + 'u5', [base36encode(v) for v in range(100000)]]
 
   for key_name, values in [r, u, u2, u3, u4, u5]:
     key_id = get_or_create_key(service, key_name)
