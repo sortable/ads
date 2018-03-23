@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 """
-This code adapts from the examples provided by the GoogleAds Python library
-to add the specific targeting keys required by Sortable to provide analytics.
+This code adapts examples provided by the GoogleAds Python library.
+It adds the specific targeting keys required by Sortable to provide analytics.
 The LoadFromStorage method is pulling credentials and properties from a
 "googleads.yaml" file. By default, it looks for this file in your home
 directory. For more information, see the "Caching authentication information"
@@ -43,12 +43,11 @@ def get_or_create_key(custom_targeting_service, key_name):
 def get_values_for_key(custom_targeting_service, key_id):
     """ Based on the example get_predefined_custom_targeting_keys_and_values.py """
     # Get custom targeting keys by statement.
-    # Create a statement to select custom targeting values.
     statement = (dfp.StatementBuilder()
                  .Where('customTargetingKeyId IN (:ids) AND status=\'ACTIVE\'')
                  .WithBindVariable('ids', [key_id]))
 
-    # Retrieve a small amount of custom targeting values at a time, paging
+    # Retrieve a small number of custom targeting values at a time, paging
     # through until all custom targeting values have been retrieved.
     values = []
 
