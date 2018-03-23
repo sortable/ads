@@ -52,7 +52,7 @@ def get_values_for_key(custom_targeting_service, key_id):
     # Get custom targeting keys by statement.
     # Create a statement to select custom targeting values.
     statement = (dfp.StatementBuilder()
-                 .Where('customTargetingKeyId IN (:ids)')
+                 .Where('customTargetingKeyId IN (:ids) AND status=\'ACTIVE\'')
                  .WithBindVariable('ids', [key_id]))
 
     # Retrieve a small amount of custom targeting values at a time, paging
@@ -63,7 +63,7 @@ def get_values_for_key(custom_targeting_service, key_id):
         response = custom_targeting_service.getCustomTargetingValuesByStatement(
             statement.ToStatement())
         if 'results' in response:
-            values = values + [v['name'] for v in response['results'] if v['status'] == 'ACTIVE']
+            values = values + [v['name'] for v in response['results']]
             statement.offset += statement.limit
         else:
             break
