@@ -2,7 +2,7 @@
 
 """
 This code adapts from the examples provided by the GoogleAds Python library
-to add the specific targeting keys required by sortable to provide analytics.
+to add the specific targeting keys required by Sortable to provide analytics.
 The LoadFromStorage method is pulling credentials and properties from a
 "googleads.yaml" file. By default, it looks for this file in your home
 directory. For more information, see the "Caching authentication information"
@@ -13,7 +13,7 @@ import time
 from googleads import dfp
 
 # Number of values to send per request, and timeout between requests
-# Play with these if you find Google is throttling you. This will only
+# Play with these if you are being throttled. This will only
 # try to add missing values, and will skip existing ones.
 CHUNK_SIZE = 500
 TIMEOUT = 0
@@ -101,6 +101,7 @@ def base36encode(number):
     base36 = ALPHABET[i] + base36
 
   return base36 or ALPHABET[0]
+
 
 def add_sortable_keys():
   """ Adds all keys necessary for Sortable Analytics """
