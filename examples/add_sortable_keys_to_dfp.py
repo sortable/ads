@@ -101,7 +101,7 @@ def add_sortable_keys():
     dfp_client = dfp.DfpClient.LoadFromStorage()
     service = dfp_client.GetService('CustomTargetingService', version='v201802')
 
-    key_value_pairs = [[KEY_PREFIX + 'r', [str(v) for v in range(200)]],
+    key_value_pairs = [[KEY_PREFIX + 'r', [str(v) for v in range(2048)]],
                        [KEY_PREFIX + 'u', [base36encode(v) for v in range(100000)]],
                        [KEY_PREFIX + 'u2', [base36encode(v) for v in range(100000)]],
                        [KEY_PREFIX + 'u3', [base36encode(v) for v in range(100000)]],
