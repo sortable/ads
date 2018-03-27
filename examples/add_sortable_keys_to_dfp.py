@@ -10,7 +10,13 @@ section of the googleads README at github.com/googleads/googleads-python-lib.
 """
 
 import string
+import time
 from googleads import dfp
+
+# Number of values to send per request, and timeout between requests
+# Play with these if you are being throttled or think it could go faster.
+CHUNK_SIZE = 1000
+TIMEOUT = 0
 
 # Our keys are typically prefixed to avoid conflicts with existing keys.
 KEY_PREFIX = 'srt_'
@@ -65,9 +71,20 @@ def get_values_for_key(custom_targeting_service, key_id):
     return values
 
 
-def upsert_values(custom_targeting_service, key_name, values):
+def throttled_create_values(custom_targeting_service, key_id, values):
+    """ Send the keys to Google in chunks """
+    for i in xrange(0, len(values), CHUNK_SIZE):
+        j = min(i + CHUNK_SIZE, len(values))
+        chunk = [{'name': v, 'customTargetingKeyId': key_id} for v in values[i:j]]
+
+        print 'Adding values {} to {}'.format(values[j - 1], values[i])
+        custom_targeting_service.createCustomTargetingValues(chunk)
+        time.sleep(TIMEOUT)
+
+
+def upsert_key_values(custom_targeting_service, key_name, values):
     """ Create the values on the existing key, if they aren't there yet """
-    print "Processing key " + key_name
+    print 'Processing key {}'.format(key_name)
     key_id = get_or_create_key(custom_targeting_service, key_name)
     existing_values = get_values_for_key(custom_targeting_service, key_id)
 
@@ -75,12 +92,10 @@ def upsert_values(custom_targeting_service, key_name, values):
         try:
             values.remove(value)
         except ValueError:
-            print "Unexpected value {} exists for this key. Continuing anyways.".format(value)
+            print 'Unexpected value {} exists for this key. Continuing anyways.'.format(value)
 
-    print "Need to create {} values".format(len(values))
-    for value in values:
-        to_insert = {'name': str(value), 'customTargetingKeyId': key_id}
-        custom_targeting_service.createCustomTargetingValues(to_insert)
+    print 'Need to create {} values'.format(len(values))
+    throttled_create_values(custom_targeting_service, key_id, values)
 
 
 def base36encode(number):
@@ -108,7 +123,7 @@ def add_sortable_keys():
                        [KEY_PREFIX + 'u5', [base36encode(v) for v in xrange(100000)]]]
 
     for key_name, values in key_value_pairs:
-        upsert_values(service, key_name, values)
+        upsert_key_values(service, key_name, values)
 
 
 if __name__ == '__main__':
