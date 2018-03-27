@@ -11,6 +11,7 @@ section of the googleads README at github.com/googleads/googleads-python-lib.
 
 import string
 import time
+from itertools import islice
 from googleads import dfp
 
 # Number of values to send per request, and timeout between requests
@@ -74,10 +75,8 @@ def get_values_for_key(custom_targeting_service, key_id):
 def throttled_create_values(custom_targeting_service, key_id, values):
     """ Send the keys to Google in chunks """
     for i in xrange(0, len(values), CHUNK_SIZE):
-        j = min(i + CHUNK_SIZE, len(values))
-        chunk = [{'name': v, 'customTargetingKeyId': key_id} for v in values[i:j]]
-
-        print 'Adding values {} to {}'.format(values[j - 1], values[i])
+        chunk = [{'name': v, 'customTargetingKeyId': key_id} for v in islice(values, i, i + CHUNK_SIZE)]
+        print 'Adding values {} to {}'.format(values[i], values[i + CHUNK_SIZE - 1])
         custom_targeting_service.createCustomTargetingValues(chunk)
         time.sleep(TIMEOUT)
 
