@@ -9,18 +9,19 @@ directory. For more information, see the "Caching authentication information"
 section of the googleads README at github.com/googleads/googleads-python-lib.
 """
 
+import string
 from googleads import dfp
 
 # Our keys are typically prefixed to avoid conflicts with existing keys.
 KEY_PREFIX = 'srt_'
 
 # For base 36 encoding
-ALPHABET = '0123456789abcdefghijklmnopqrstuvwxyz'
+BASE36_ALPHABET = string.digits + string.ascii_lowercase
 
 def get_or_create_key(custom_targeting_service, key_name):
     """ Get or create a Sortable Key Value with name key_name,
-    reactivating it if it was deleted and returning its id """
-
+    reactivating it if it was deleted and returning its id
+    """
     statement = (dfp.StatementBuilder()
                  .Where('name = :keyName')
                  .WithBindVariable('keyName', key_name)).ToStatement()
@@ -55,12 +56,12 @@ def get_values_for_key(custom_targeting_service, key_id):
         response = custom_targeting_service.getCustomTargetingValuesByStatement(
             statement.ToStatement())
         if 'results' in response:
-            values = values + [v['name'] for v in response['results']]
+            values.extend(v['name'] for v in response['results'])
             statement.offset += statement.limit
         else:
             break
 
-    print '\nNumber of results found: %s' % response['totalResultSetSize']
+    print '\nNumber of results found: {}'.format(response['totalResultSetSize'])
     return values
 
 
@@ -74,9 +75,9 @@ def upsert_values(custom_targeting_service, key_name, values):
         try:
             values.remove(value)
         except ValueError:
-            print "Unexpected value " + value + " exists for this key. Continuing anyways."
+            print "Unexpected value {} exists for this key. Continuing anyways.".format(value)
 
-    print "Need to create " + str(len(values)) + " values"
+    print "Need to create {} values".format(len(values))
     for value in values:
         to_insert = {'name': str(value), 'customTargetingKeyId': key_id}
         custom_targeting_service.createCustomTargetingValues(to_insert)
@@ -88,24 +89,23 @@ def base36encode(number):
 
     while number:
         number, i = divmod(number, 36)
-        base36 = ALPHABET[i] + base36
+        base36 = BASE36_ALPHABET[i] + base36
 
-    return base36 or ALPHABET[0]
+    return base36 or BASE36_ALPHABET[0]
 
 
 def add_sortable_keys():
     """ Adds all keys necessary for Sortable Analytics """
-
     # Initialize client object and custom targeting service.
     dfp_client = dfp.DfpClient.LoadFromStorage()
     service = dfp_client.GetService('CustomTargetingService', version='v201802')
 
-    key_value_pairs = [[KEY_PREFIX + 'r', [str(v) for v in range(2048)]],
-                       [KEY_PREFIX + 'u', [base36encode(v) for v in range(100000)]],
-                       [KEY_PREFIX + 'u2', [base36encode(v) for v in range(100000)]],
-                       [KEY_PREFIX + 'u3', [base36encode(v) for v in range(100000)]],
-                       [KEY_PREFIX + 'u4', [base36encode(v) for v in range(100000)]],
-                       [KEY_PREFIX + 'u5', [base36encode(v) for v in range(100000)]]]
+    key_value_pairs = [[KEY_PREFIX + 'r', [str(v) for v in xrange(2048)]],
+                       [KEY_PREFIX + 'u', [base36encode(v) for v in xrange(100000)]],
+                       [KEY_PREFIX + 'u2', [base36encode(v) for v in xrange(100000)]],
+                       [KEY_PREFIX + 'u3', [base36encode(v) for v in xrange(100000)]],
+                       [KEY_PREFIX + 'u4', [base36encode(v) for v in xrange(100000)]],
+                       [KEY_PREFIX + 'u5', [base36encode(v) for v in xrange(100000)]]]
 
     for key_name, values in key_value_pairs:
         upsert_values(service, key_name, values)
