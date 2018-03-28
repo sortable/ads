@@ -75,7 +75,8 @@ def get_values_for_key(custom_targeting_service, key_id):
 def throttled_create_values(custom_targeting_service, key_id, values):
     """ Send the keys to Google in chunks """
     for i in xrange(0, len(values), CHUNK_SIZE):
-        chunk = [{'name': v, 'customTargetingKeyId': key_id} for v in islice(values, i, i + CHUNK_SIZE)]
+        chunk = [{'name': v, 'customTargetingKeyId': key_id}
+                 for v in islice(values, i, i + CHUNK_SIZE)]
         print 'Adding values {} to {}'.format(chunk[0]['name'], chunk[-1]['name'])
         custom_targeting_service.createCustomTargetingValues(chunk)
         time.sleep(TIMEOUT)
